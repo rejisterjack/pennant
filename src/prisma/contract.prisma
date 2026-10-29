@@ -1,0 +1,82 @@
+// use prisma-8
+
+enum Role {
+  admin  = "admin"
+  member = "member"
+}
+
+model User {
+  id           String        @id @onCreate(uuid())
+  email        String        @unique
+  passwordHash String
+  name         String
+  role         Role          @default(member)
+  createdAt    TimestamptzString @default(now())
+  sessions     Session[]
+  apiKeys      ApiKey[]
+  auditEvents  AuditEvent[]
+}
+
+model Session {
+  id        String            @id @onCreate(uuid())
+  tokenHash String            @unique
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt TimestamptzString
+  createdAt TimestamptzString @default(now())
+
+  @@index([userId])
+}
+
+model ApiKey {
+  id        String             @id @onCreate(uuid())
+  name      String
+  prefix    String
+  keyHash   String             @unique
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt TimestamptzString  @default(now())
+  revokedAt TimestamptzString?
+
+  @@index([userId])
+}
+
+model Flag {
+  id             String            @id @onCreate(uuid())
+  key            String            @unique
+  name           String
+  description    String            @default("")
+  enabled        Boolean           @default(false)
+  rolloutPercent Int               @default(100)
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.UpdatedAtString
+  targets        FlagTarget[]
+
+  @@check(expression: sql`("rolloutPercent" >= 0 AND "rolloutPercent" <= 100)`, name: "flag_rollout_range")
+}
+
+model FlagTarget {
+  id         String  @id @onCreate(uuid())
+  flagId     String
+  flag       Flag    @relation(fields: [flagId], references: [id], onDelete: Cascade)
+  externalId String
+  allowed    Boolean
+
+  @@unique([flagId, externalId])
+  @@index([flagId])
+}
+
+model AuditEvent {
+  id         String            @id @onCreate(uuid())
+  actorId    String?
+  actor      User?             @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorEmail String
+  action     String
+  flagKey    String
+  before     Jsonb?
+  after      Jsonb?
+  createdAt  TimestamptzString @default(now())
+
+  @@index([flagKey, createdAt])
+  @@index([createdAt])
+}
