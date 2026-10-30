@@ -23,7 +23,7 @@ You need a [Vercel](https://vercel.com) project and a [Neon](https://neon.tech) 
 4. Set `AUTH_SECRET` to a long random string (`openssl rand -base64 32`). Rotating it signs everyone out and invalidates API keys.
 5. Deploy. The build runs `prisma db migrate` before `next build`.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rejisterjack/pennant&env=AUTH_SECRET&project-name=pennant&repository-name=pennant)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rejisterjack/pennant&env=DATABASE_URL,DIRECT_URL,AUTH_SECRET&project-name=pennant&repository-name=pennant)
 
 After the deploy, open the site, create the admin account, then create an API key under **API keys**. The full secret is shown once.
 

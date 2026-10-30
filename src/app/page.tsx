@@ -29,7 +29,7 @@ export default function Home() {
         <div className="flex flex-wrap gap-3">
           <a
             className="inline-flex h-11 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-ink"
-            href="https://vercel.com/new/clone?repository-url=https://github.com/rejisterjack/pennant&env=AUTH_SECRET&project-name=pennant&repository-name=pennant"
+            href="https://vercel.com/new/clone?repository-url=https://github.com/rejisterjack/pennant&env=DATABASE_URL,DIRECT_URL,AUTH_SECRET&project-name=pennant&repository-name=pennant"
           >
             Deploy to Vercel
           </a>
