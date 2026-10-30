@@ -27,6 +27,13 @@ You need a [Vercel](https://vercel.com) project and a [Neon](https://neon.tech) 
 
 After the deploy, open the site, create the admin account, then create an API key under **API keys**. The full secret is shown once.
 
+### Post-deploy checklist
+
+1. `GET /api/health` returns `{ "ok": true }`.
+2. Open `/setup` and create the first admin (this screen closes after the first account).
+3. Under **API keys**, create a key and copy the secret once.
+4. Check a flag with the SDK or `GET /api/v1/evaluate?flag=<key>` and `Authorization: Bearer <key>`.
+
 Neon’s free compute sleeps when idle. The first flag check after idle can be slow. `/api/health` confirms the app can reach the database.
 
 ## Local development
