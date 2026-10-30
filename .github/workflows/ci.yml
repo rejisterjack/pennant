@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: pennant
+          POSTGRES_PASSWORD: pennant
+          POSTGRES_DB: pennant
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pennant"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://pennant:pennant@localhost:5432/pennant
+      DIRECT_URL: postgresql://pennant:pennant@localhost:5432/pennant
+      AUTH_SECRET: ci-auth-secret-not-for-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx prisma db migrate
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build -w @rejisterjack/pennant
+      - run: npm run build
