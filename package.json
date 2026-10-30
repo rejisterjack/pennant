@@ -10,7 +10,7 @@
     "build": "prisma db migrate && next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit && tsc -p packages/sdk --noEmit",
+    "typecheck": "next typegen && tsc --noEmit && tsc -p packages/sdk --noEmit",
     "test": "tsx --test src/lib/evaluate.test.ts src/lib/api.test.ts packages/sdk/src/index.test.ts",
     "contract:emit": "prisma contract emit",
     "postinstall": "prisma contract emit"
