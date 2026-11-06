@@ -77,3 +77,5 @@ Percentage rollout needs a stable user id. `0` means only forced-on users. `100`
 ## What this is not
 
 Pennant stores flags and rollout rules. It does not run experiments, collect analytics, or provide segments, webhooks, or in-app environments.
+
+**Won't-build (closed):** A/B experiment platforms, audience segments, and flag-change webhooks stay out of scope. The audit log is the change record; per-user force on/off covers targeting.
