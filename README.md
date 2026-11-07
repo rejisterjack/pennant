@@ -2,6 +2,8 @@
 
 Self-hosted feature flags. Create a flag, check it with one SDK call, and toggle it from a dashboard without redeploying your app.
 
+The reference deployment is https://pennant.rejisterjack.com. That instance is private: sign in with your own admin account, and do not put production API keys from other apps into a shared demo.
+
 ```ts
 import { Pennant } from "@rejisterjack/pennant";
 
