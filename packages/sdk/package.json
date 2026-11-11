@@ -1,6 +1,6 @@
 {
   "name": "@rejisterjack/pennant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript client for a self-hosted Pennant feature-flag service.",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,5 +21,17 @@
     "access": "public"
   },
   "license": "MIT",
-  "sideEffects": false
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rejisterjack/pennant.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/rejisterjack/pennant#readme",
+  "bugs": {
+    "url": "https://github.com/rejisterjack/pennant/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }

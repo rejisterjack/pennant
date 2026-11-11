@@ -43,6 +43,7 @@ async function AuditList({ searchParams }: { searchParams: Promise<{ flag?: stri
               <span>
                 <span className="font-mono">{event.flagKey}</span>
                 <span className="text-muted"> {event.action} by {event.actorEmail}</span>
+                {event.summary ? <span className="mt-1 block text-muted">{event.summary}</span> : null}
               </span>
               <time className="text-muted">{new Date(event.createdAt).toLocaleString()}</time>
             </li>

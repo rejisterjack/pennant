@@ -1,3 +1,6 @@
+import { unstable_rethrow } from "next/navigation";
+import { connection } from "next/server";
+
 export class HttpError extends Error {
   constructor(
     public status: number,
@@ -38,8 +41,15 @@ export function json(data: unknown, status = 200, extra?: HeadersInit): Response
 
 export async function handle(fn: () => Promise<Response>): Promise<Response> {
   try {
+    try {
+      await connection();
+    } catch (error) {
+      unstable_rethrow(error);
+      if (!(error instanceof Error) || !error.message.includes("outside a request scope")) throw error;
+    }
     return await fn();
   } catch (error) {
+    unstable_rethrow(error);
     if (error instanceof HttpError) return json({ error: error.message }, error.status);
     console.error(error);
     return json({ error: "Internal error" }, 500);

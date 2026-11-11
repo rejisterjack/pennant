@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit && tsc -p packages/sdk --noEmit",
-    "test": "tsx --test src/lib/evaluate.test.ts src/lib/api.test.ts packages/sdk/src/index.test.ts",
+    "test": "tsx --test --test-concurrency=1 src/lib/evaluate.test.ts src/lib/audit-summary.test.ts src/lib/rate-limit.test.ts src/lib/validate.test.ts src/lib/security.test.ts src/lib/health-down.test.ts src/lib/api.test.ts src/lib/load.test.ts packages/sdk/src/index.test.ts",
+    "test:e2e": "playwright test",
     "contract:emit": "prisma contract emit",
     "postinstall": "prisma contract emit"
   },
@@ -23,12 +24,15 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^24",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "pg": "^8.23.1",
     "prisma": "^8.0.0-rc.28",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",

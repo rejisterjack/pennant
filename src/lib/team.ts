@@ -34,13 +34,17 @@ export async function createTeammate(input: {
 
 export async function deleteTeammate(actor: Actor, userId: string): Promise<void> {
   if (actor.id === userId) throw new HttpError(400, "You cannot remove yourself");
-  const user = await db.orm.public.User.whereUnique({ id: userId }).first();
-  if (!user) throw new HttpError(404, "Teammate not found");
-  if (user.role === "admin") {
-    const { total } = await db.orm.public.User.where({ role: "admin" }).aggregate((agg) => ({
-      total: agg.count(),
-    }));
-    if (total <= 1) throw new HttpError(400, "The last admin cannot be removed");
-  }
-  await db.orm.public.User.whereUnique({ id: userId }).delete();
+  await db.transaction(async (tx) => {
+    const lock = tx.raw.sql`SELECT pg_advisory_xact_lock(4815162342)`.affectedCount().build();
+    await tx.execute(lock);
+    const user = await tx.orm.public.User.whereUnique({ id: userId }).first();
+    if (!user) throw new HttpError(404, "Teammate not found");
+    if (user.role === "admin") {
+      const { total } = await tx.orm.public.User.where({ role: "admin" }).aggregate((agg) => ({
+        total: agg.count(),
+      }));
+      if (total <= 1) throw new HttpError(400, "The last admin cannot be removed");
+    }
+    await tx.orm.public.User.whereUnique({ id: userId }).delete();
+  });
 }

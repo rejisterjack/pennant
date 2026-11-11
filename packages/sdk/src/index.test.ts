@@ -39,6 +39,62 @@ describe("Pennant SDK", () => {
     await assert.rejects(() => pennant.isEnabled("new-checkout"), /401/);
   });
 
+  it("reuses a cached value and drops the oldest entry past 1000", async () => {
+    let calls = 0;
+    const pennant = new Pennant({
+      baseUrl: "https://pennant.example",
+      apiKey: "pn_test",
+      cacheTtlMs: 60_000,
+      fetch: async () => {
+        calls += 1;
+        return jsonResponse({ enabled: true });
+      },
+    });
+    assert.equal(await pennant.isEnabled("checkout", "user-1"), true);
+    assert.equal(await pennant.isEnabled("checkout", "user-1"), true);
+    assert.equal(calls, 1);
+
+    for (let i = 0; i < 1000; i += 1) {
+      await pennant.isEnabled(`flag-${i}`);
+    }
+    calls = 0;
+    await pennant.isEnabled("checkout", "user-1");
+    assert.equal(calls, 1);
+  });
+
+  it("rejects a missing flag key before calling the network", async () => {
+    const pennant = new Pennant({
+      baseUrl: "https://pennant.example",
+      apiKey: "pn_test",
+      fetch: async () => {
+        throw new Error("should not fetch");
+      },
+    });
+    await assert.rejects(() => pennant.isEnabled("  "), /flag key is required/);
+  });
+
+  it("trims the user id and rejects a payload without a boolean", async () => {
+    let seen: Request | undefined;
+    const pennant = new Pennant({
+      baseUrl: "https://pennant.example",
+      apiKey: "pn_test",
+      fetch: async (input, init) => {
+        seen = new Request(input, init);
+        return jsonResponse({ enabled: "yes" });
+      },
+    });
+    await assert.rejects(() => pennant.isEnabled("new-checkout", "  user-1  "), /unexpected payload/);
+    assert.equal(new URL(seen!.url).searchParams.get("userId"), "user-1");
+
+    const fallback = new Pennant({
+      baseUrl: "https://pennant.example",
+      apiKey: "pn_test",
+      defaultValue: false,
+      fetch: async () => jsonResponse({ nope: true }),
+    });
+    assert.equal(await fallback.isEnabled("new-checkout"), false);
+  });
+
   it("returns defaultValue only when the request fails", async () => {
     const pennant = new Pennant({
       baseUrl: "https://pennant.example",

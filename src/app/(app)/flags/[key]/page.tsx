@@ -35,12 +35,14 @@ async function FlagDetail({ params }: { params: Promise<{ key: string }> }) {
 }
 
 async function loadFlagPage(key: string) {
+  let flag;
   try {
-    const flag = await getFlag(key);
-    const events = await listAudit(key, 8);
-    return { flag, events };
+    flag = await getFlag(key);
   } catch (error) {
-    if (error instanceof HttpError && error.status === 404) notFound();
-    throw error;
+    if (error instanceof HttpError && error.status === 404) flag = null;
+    else throw error;
   }
+  if (!flag) notFound();
+  const events = await listAudit(key, 8);
+  return { flag, events };
 }

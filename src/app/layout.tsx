@@ -18,6 +18,8 @@ export const metadata: Metadata = {
     template: "%s · Pennant",
   },
   description: "Self-hosted feature flags. Toggle features without a redeploy.",
+  icons: { icon: "/favicon.svg" },
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

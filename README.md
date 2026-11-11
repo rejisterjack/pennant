@@ -48,7 +48,7 @@ npx prisma db migrate
 npm run dev
 ```
 
-Open http://localhost:3000/setup and create the first admin. Further accounts are added from **Team**. Pennant does not send email.
+Open http://localhost:3000/setup and create the first admin. Further accounts are added from **Team**. Pennant does not send email. Eight failed sign-ins for the same email and client address are blocked for 15 minutes.
 
 ## SDK
 

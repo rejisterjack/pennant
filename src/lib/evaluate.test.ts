@@ -73,6 +73,10 @@ describe("evaluateFlag", () => {
       enabled: false,
       reason: "rollout_no_user",
     });
+    assert.deepEqual(evaluateFlag(flag({ rolloutPercent: 50 }), "   "), {
+      enabled: false,
+      reason: "rollout_no_user",
+    });
   });
 
   it("includes buckets strictly below the percent and excludes the boundary", () => {
