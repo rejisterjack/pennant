@@ -73,6 +73,28 @@ describe("Pennant SDK", () => {
     await assert.rejects(() => pennant.isEnabled("  "), /flag key is required/);
   });
 
+  it("trims the user id and rejects a payload without a boolean", async () => {
+    let seen: Request | undefined;
+    const pennant = new Pennant({
+      baseUrl: "https://pennant.example",
+      apiKey: "pn_test",
+      fetch: async (input, init) => {
+        seen = new Request(input, init);
+        return jsonResponse({ enabled: "yes" });
+      },
+    });
+    await assert.rejects(() => pennant.isEnabled("new-checkout", "  user-1  "), /unexpected payload/);
+    assert.equal(new URL(seen!.url).searchParams.get("userId"), "user-1");
+
+    const fallback = new Pennant({
+      baseUrl: "https://pennant.example",
+      apiKey: "pn_test",
+      defaultValue: false,
+      fetch: async () => jsonResponse({ nope: true }),
+    });
+    assert.equal(await fallback.isEnabled("new-checkout"), false);
+  });
+
   it("returns defaultValue only when the request fails", async () => {
     const pennant = new Pennant({
       baseUrl: "https://pennant.example",
