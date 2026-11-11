@@ -13,6 +13,8 @@ type CacheEntry = {
   expiresAt: number;
 };
 
+const MAX_CACHE_ENTRIES = 1000;
+
 /**
  * Server-side client. Do not ship the API key to a browser.
  * Evaluation stays on the Pennant server, so a dashboard toggle applies without redeploying.
@@ -26,6 +28,8 @@ export class Pennant {
   private readonly cache = new Map<string, CacheEntry>();
 
   constructor(options: PennantOptions) {
+    if (!options.baseUrl?.trim()) throw new Error("Pennant baseUrl is required");
+    if (!options.apiKey?.trim()) throw new Error("Pennant apiKey is required");
     this.baseUrl = options.baseUrl.replace(/\/$/, "");
     this.apiKey = options.apiKey;
     this.cacheTtlMs = options.cacheTtlMs ?? 0;
@@ -34,15 +38,22 @@ export class Pennant {
   }
 
   async isEnabled(flag: string, userId?: string): Promise<boolean> {
-    const cacheKey = `${flag}\n${userId ?? ""}`;
+    const id = userId?.trim() || undefined;
+    if (!flag.trim()) throw new Error("Pennant flag key is required");
+    const cacheKey = `${flag}\n${id ?? ""}`;
     if (this.cacheTtlMs > 0) {
       const hit = this.cache.get(cacheKey);
-      if (hit && hit.expiresAt > Date.now()) return hit.enabled;
+      if (hit && hit.expiresAt > Date.now()) {
+        this.cache.delete(cacheKey);
+        this.cache.set(cacheKey, hit);
+        return hit.enabled;
+      }
+      if (hit) this.cache.delete(cacheKey);
     }
 
     const url = new URL(`${this.baseUrl}/api/v1/evaluate`);
     url.searchParams.set("flag", flag);
-    if (userId) url.searchParams.set("userId", userId);
+    if (id) url.searchParams.set("userId", id);
 
     let response: Response;
     try {
@@ -66,6 +77,10 @@ export class Pennant {
     }
 
     if (this.cacheTtlMs > 0) {
+      if (this.cache.size >= MAX_CACHE_ENTRIES) {
+        const oldest = this.cache.keys().next().value;
+        if (oldest !== undefined) this.cache.delete(oldest);
+      }
       this.cache.set(cacheKey, {
         enabled: body.enabled,
         expiresAt: Date.now() + this.cacheTtlMs,

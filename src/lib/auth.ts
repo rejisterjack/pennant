@@ -51,14 +51,15 @@ export async function setupAccount(input: {
   }
 }
 
+const DUMMY_PASSWORD_HASH = `scrypt:${"00".repeat(16)}:${"11".repeat(64)}`;
+
 export async function login(input: {
   email: string;
   password: string;
 }): Promise<{ actor: Actor; token: string }> {
   const user = await db.orm.public.User.whereUnique({ email: input.email }).first();
-  if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
-    throw new HttpError(401, "Invalid email or password");
-  }
+  const matches = await verifyPassword(input.password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
+  if (!user || !matches) throw new HttpError(401, "Invalid email or password");
   const token = await createSession(user.id);
   return { actor: toActor(user), token };
 }

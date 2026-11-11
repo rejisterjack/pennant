@@ -40,10 +40,17 @@ export function CreateKeyForm() {
         </button>
       </form>
       {secret ? (
-        <p className="rounded-md border border-line bg-card p-4 text-sm">
-          Copy this secret now. It will not be shown again.
+        <div className="rounded-md border border-line bg-card p-4 text-sm">
+          <p>Copy this secret now. It will not be shown again.</p>
           <code className="mt-2 block break-all font-mono text-xs">{secret}</code>
-        </p>
+          <button
+            type="button"
+            className="mt-3 h-9 rounded-md border border-line px-3 text-sm font-medium"
+            onClick={() => navigator.clipboard.writeText(secret)}
+          >
+            Copy secret
+          </button>
+        </div>
       ) : null}
       {error ? <p className="text-sm text-bad">{error}</p> : null}
     </div>
@@ -52,17 +59,27 @@ export function CreateKeyForm() {
 
 export function RevokeKeyButton({ id }: { id: string }) {
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
   return (
-    <button
-      type="button"
-      className="text-sm text-bad"
-      onClick={async () => {
-        await callApi(`/api/api-keys/${id}`, { method: "DELETE" });
-        router.refresh();
-      }}
-    >
-      Revoke
-    </button>
+    <span className="flex items-center gap-3">
+      <button
+        type="button"
+        className="text-sm text-bad"
+        onClick={async () => {
+          if (!window.confirm("Revoke this API key? Apps using it will stop evaluating flags.")) return;
+          setError(null);
+          try {
+            await callApi(`/api/api-keys/${id}`, { method: "DELETE" });
+            router.refresh();
+          } catch (caught) {
+            setError(caught instanceof Error ? caught.message : "Could not revoke the key");
+          }
+        }}
+      >
+        Revoke
+      </button>
+      {error ? <span className="text-xs text-bad">{error}</span> : null}
+    </span>
   );
 }
 
@@ -131,6 +148,7 @@ export function RemoveUserButton({ id }: { id: string }) {
         type="button"
         className="text-sm text-bad"
         onClick={async () => {
+          if (!window.confirm("Remove this teammate? Their sessions stop working.")) return;
           setError(null);
           try {
             await callApi(`/api/users/${id}`, { method: "DELETE" });

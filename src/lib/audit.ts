@@ -1,4 +1,5 @@
 import { db } from "@/prisma/db";
+import { auditSummary } from "@/lib/audit-summary";
 import type { Actor } from "@/lib/actors";
 
 export async function recordAudit(input: {
@@ -31,5 +32,6 @@ export async function listAudit(flagKey?: string, limit = 100) {
     before: row.before,
     after: row.after,
     createdAt: row.createdAt,
+    summary: auditSummary(row.action, row.before, row.after),
   }));
 }

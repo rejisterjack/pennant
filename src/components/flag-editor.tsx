@@ -43,6 +43,8 @@ export function NewFlagForm() {
           required
           name="key"
           placeholder="new-checkout"
+          pattern="[a-z][a-z0-9-]{0,63}"
+          title="Start with a letter. Use lowercase letters, numbers, and hyphens."
           className="h-11 rounded-md border border-line bg-card px-3 font-mono outline-none focus:border-accent"
         />
       </label>
@@ -79,7 +81,7 @@ export function FlagEditor({
   audit,
 }: {
   flag: FlagView;
-  audit: { id: string; action: string; actorEmail: string; createdAt: string }[];
+  audit: { id: string; action: string; actorEmail: string; createdAt: string; summary: string | null }[];
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -91,8 +93,10 @@ export function FlagEditor({
     try {
       await callApi(path, init);
       router.refresh();
+      return true;
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Request failed");
+      return false;
     }
   }
 
@@ -115,6 +119,46 @@ export function FlagEditor({
         >
           Turn {flag.enabled ? "off" : "on"}
         </button>
+      </section>
+
+      <section className="rounded-lg border border-line bg-card p-5">
+        <h2 className="font-medium">Name and description</h2>
+        <form
+          className="mt-4 flex max-w-lg flex-col gap-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            void mutate(`/api/flags/${flag.key}`, {
+              method: "PATCH",
+              body: JSON.stringify({
+                name: form.get("name"),
+                description: form.get("description") ?? "",
+              }),
+            });
+          }}
+        >
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span>Name</span>
+            <input
+              required
+              name="name"
+              defaultValue={flag.name}
+              className="h-11 rounded-md border border-line px-3"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span>Description</span>
+            <textarea
+              name="description"
+              rows={3}
+              defaultValue={flag.description}
+              className="rounded-md border border-line px-3 py-2"
+            />
+          </label>
+          <button type="submit" className="h-11 self-start rounded-md border border-line px-4 text-sm font-medium">
+            Save details
+          </button>
+        </form>
       </section>
 
       <section className="rounded-lg border border-line bg-card p-5">
@@ -145,7 +189,12 @@ export function FlagEditor({
             min={0}
             max={100}
             value={percent}
-            onChange={(event) => setPercent(Number(event.target.value))}
+            onChange={(event) => {
+              const raw = event.target.value;
+              if (raw === "") return;
+              const next = Number(raw);
+              if (Number.isInteger(next) && next >= 0 && next <= 100) setPercent(next);
+            }}
             className="h-11 w-20 rounded-md border border-line px-3"
           />
           <button type="submit" className="h-11 rounded-md border border-line px-4 text-sm font-medium">
@@ -267,6 +316,7 @@ export function FlagEditor({
               <li key={event.id} className="flex flex-wrap justify-between gap-2 py-3">
                 <span>
                   {event.action} by {event.actorEmail}
+                  {event.summary ? <span className="mt-1 block text-muted">{event.summary}</span> : null}
                 </span>
                 <time className="text-muted">{new Date(event.createdAt).toLocaleString()}</time>
               </li>
@@ -282,7 +332,8 @@ export function FlagEditor({
         className="self-start text-sm text-bad"
         onClick={async () => {
           if (!window.confirm(`Delete ${flag.key}?`)) return;
-          await mutate(`/api/flags/${flag.key}`, { method: "DELETE" });
+          const deleted = await mutate(`/api/flags/${flag.key}`, { method: "DELETE" });
+          if (!deleted) return;
           router.push("/flags");
           router.refresh();
         }}

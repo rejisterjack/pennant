@@ -9,6 +9,11 @@ import { POST as createUser } from "../app/api/users/route.ts";
 import { POST as createKey } from "../app/api/api-keys/route.ts";
 import { DELETE as revokeKey } from "../app/api/api-keys/[id]/route.ts";
 import { GET as evaluate } from "../app/api/v1/evaluate/route.ts";
+import { GET as publicFlags } from "../app/api/v1/flags/route.ts";
+import { DELETE as deleteFlag } from "../app/api/flags/[key]/route.ts";
+import { POST as setTarget, DELETE as removeTarget } from "../app/api/flags/[key]/targets/route.ts";
+import { POST as preview } from "../app/api/flags/[key]/preview/route.ts";
+import { POST as logout } from "../app/api/auth/logout/route.ts";
 import { GET as audit } from "../app/api/audit/route.ts";
 import { GET as health } from "../app/api/health/route.ts";
 import { db } from "../prisma/db.ts";
@@ -185,6 +190,69 @@ describe("HTTP API", () => {
       }),
     );
     assert.equal(after.status, 401);
+  });
+
+  it("targets a user, previews the result, logs out, and deletes the flag", async () => {
+    const admin = await asAdmin();
+    const created = await createFlag(
+      jsonRequest("/api/flags", { key: "billing", name: "Billing", enabled: true, rolloutPercent: 0 }, admin),
+    );
+    assert.equal(created.status, 201);
+
+    const targeted = await setTarget(
+      jsonRequest("/api/flags/billing/targets", { userId: "ada", allowed: true }, admin),
+      { params: Promise.resolve({ key: "billing" }) },
+    );
+    assert.equal(targeted.status, 200);
+
+    const looked = await preview(
+      jsonRequest("/api/flags/billing/preview", { userId: "ada" }, admin),
+      { params: Promise.resolve({ key: "billing" }) },
+    );
+    assert.deepEqual(await looked.json(), { enabled: true, reason: "target_allow" });
+
+    const keyResponse = await createKey(jsonRequest("/api/api-keys", { name: "sdk" }, admin));
+    const secret = ((await keyResponse.json()) as { key: { secret: string } }).key.secret;
+    const defs = await publicFlags(
+      new Request("http://localhost/api/v1/flags", { headers: { authorization: `Bearer ${secret}` } }),
+    );
+    assert.equal(defs.status, 200);
+    const body = (await defs.json()) as { flags: { key: string; targets: { userId: string }[] }[] };
+    assert.equal(body.flags[0]?.key, "billing");
+    assert.equal(body.flags[0]?.targets[0]?.userId, "ada");
+
+    const tooLong = await evaluate(
+      new Request(`http://localhost/api/v1/evaluate?flag=${"a".repeat(201)}`, {
+        headers: { authorization: `Bearer ${secret}` },
+      }),
+    );
+    assert.equal(tooLong.status, 400);
+
+    const cleared = await removeTarget(
+      new Request("http://localhost/api/flags/billing/targets?userId=ada", {
+        method: "DELETE",
+        headers: { cookie: admin },
+      }),
+      { params: Promise.resolve({ key: "billing" }) },
+    );
+    assert.equal(cleared.status, 200);
+
+    const signedOut = await logout(new Request("http://localhost/api/auth/logout", { method: "POST", headers: { cookie: admin } }));
+    assert.equal(signedOut.status, 200);
+    const meAfter = await me(new Request("http://localhost/api/auth/me", { headers: { cookie: admin } }));
+    assert.equal(meAfter.status, 401);
+
+    const relogin = await login(jsonRequest("/api/auth/login", { email: "ada@example.com", password: "correct-horse" }));
+    const cookie = cookieFrom(relogin);
+    const removed = await deleteFlag(
+      new Request("http://localhost/api/flags/billing", { method: "DELETE", headers: { cookie } }),
+      { params: Promise.resolve({ key: "billing" }) },
+    );
+    assert.equal(removed.status, 200);
+    const log = await audit(new Request("http://localhost/api/audit?flag=billing", { headers: { cookie } }));
+    const events = (await log.json()) as { events: { action: string; summary: string | null }[] };
+    assert.ok(events.events.some((event) => event.action === "deleted" && event.summary === "Flag deleted"));
+    assert.ok(events.events.some((event) => event.action === "targeting_changed" && event.summary?.includes("ada")));
   });
 
   it("lists flags for a signed-in user", async () => {

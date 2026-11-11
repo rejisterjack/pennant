@@ -21,5 +21,17 @@
     "access": "public"
   },
   "license": "MIT",
-  "sideEffects": false
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rejisterjack/pennant.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/rejisterjack/pennant#readme",
+  "bugs": {
+    "url": "https://github.com/rejisterjack/pennant/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }

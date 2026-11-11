@@ -39,6 +39,40 @@ describe("Pennant SDK", () => {
     await assert.rejects(() => pennant.isEnabled("new-checkout"), /401/);
   });
 
+  it("reuses a cached value and drops the oldest entry past 1000", async () => {
+    let calls = 0;
+    const pennant = new Pennant({
+      baseUrl: "https://pennant.example",
+      apiKey: "pn_test",
+      cacheTtlMs: 60_000,
+      fetch: async () => {
+        calls += 1;
+        return jsonResponse({ enabled: true });
+      },
+    });
+    assert.equal(await pennant.isEnabled("checkout", "user-1"), true);
+    assert.equal(await pennant.isEnabled("checkout", "user-1"), true);
+    assert.equal(calls, 1);
+
+    for (let i = 0; i < 1000; i += 1) {
+      await pennant.isEnabled(`flag-${i}`);
+    }
+    calls = 0;
+    await pennant.isEnabled("checkout", "user-1");
+    assert.equal(calls, 1);
+  });
+
+  it("rejects a missing flag key before calling the network", async () => {
+    const pennant = new Pennant({
+      baseUrl: "https://pennant.example",
+      apiKey: "pn_test",
+      fetch: async () => {
+        throw new Error("should not fetch");
+      },
+    });
+    await assert.rejects(() => pennant.isEnabled("  "), /flag key is required/);
+  });
+
   it("returns defaultValue only when the request fails", async () => {
     const pennant = new Pennant({
       baseUrl: "https://pennant.example",
