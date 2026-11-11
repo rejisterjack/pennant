@@ -1,6 +1,6 @@
 {
   "name": "@rejisterjack/pennant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript client for a self-hosted Pennant feature-flag service.",
   "type": "module",
   "main": "./dist/index.js",
