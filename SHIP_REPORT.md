@@ -15,7 +15,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | EVAL-01 | Rollout decision | P0 | PASSED | 0 | 0 | 0 | evaluate.test.ts 9/9. Spaces are no-user. Long, Japanese, emoji, SQL, and markup ids are stable. A trimmed id matches a force-on target while the flag is off. |
 | EVAL-02 | GET /api/v1/evaluate | P0 | PASSED | 0 | 0 | 0 | No token, short token, and a session bearer are 401. Unknown flag is enabled false. Over-long flag and user id are 400. |
 | EVAL-03 | GET /api/v1/flags | P1 | PASSED | 0 | 0 | 0 | List includes the flag and rollout. No secret fields. Revoked key is 401. |
-| EVAL-04 | Evaluate responses are not cached by a CDN | P0 | NOT STARTED | | | | |
+| EVAL-04 | Evaluate responses are not cached by a CDN | P0 | PASSED | 0 | 0 | 0 | Cache-Control private, no-store. The next check saw the toggle. |
 | AUTH-01 | First admin setup | P0 | NOT STARTED | | | | |
 | AUTH-02 | Email and password session | P0 | NOT STARTED | | | | |
 | AUTH-03 | Sign out | P0 | NOT STARTED | | | | |
@@ -191,23 +191,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### EVAL-04 Evaluate responses are not cached by a CDN
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/lib/security.test.ts, src/lib/http.ts
 - **Expected behavior:** Flag checks are private and uncached. The response tells a shared cache not to store them, so a toggle is visible on the next check.
 - **Acceptance:**
-- [ ] The evaluate response includes Cache-Control private, no-store.
-- [ ] A second check after a toggle sees the new value when the SDK cache is off.
+- [x] The evaluate response includes Cache-Control private, no-store.
+- [x] A second check after a toggle sees the new value when the SDK cache is off.
 - **Test cases:**
 - Read the header on a live evaluate response during step 2.
 - The existing security test covers the header.
 - **Dependencies:** EVAL-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The evaluate response Cache-Control was private, no-store. With cache off, a disabled flag was enabled false, the toggle to on was visible on the next check, percent 0 was false, and a force-on target was true.
 
 ### AUTH-01 First admin setup
 
