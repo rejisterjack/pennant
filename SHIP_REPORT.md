@@ -48,7 +48,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | SEO-01 | Document title, description, and icon | P1 | PASSED | 0 | 0 | 0 | Titles use the Pennant template. /favicon.svg returns 200. |
 | SDK-01 | Server SDK package | P0 | PASSED | 0 | 0 | 0 | The SDK package builds and publishes only dist. |
 | SDK-02 | isEnabled calls evaluate | P0 | PASSED | 0 | 0 | 0 | The SDK test calls evaluate with the bearer token. |
-| SDK-03 | Cache and default value | P1 | NOT STARTED | | | | |
+| SDK-03 | Cache and default value | P1 | PASSED | 0 | 0 | 0 | Cache reuse and defaultValue-on-failure passed in the SDK tests. |
 | SEC-01 | Security headers | P1 | PASSED | 0 | 0 | 0 | The documented security headers are on the home response. |
 | SEC-02 | Health check | P0 | PASSED | 0 | 0 | 0 | Health is 200 {ok:true} with a private no-store cache header. |
 | SEC-03 | Concurrent evaluate load | P2 | NOT STARTED | | | | |
@@ -927,24 +927,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### SDK-03 Cache and default value
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** packages/sdk/src/index.ts
 - **Expected behavior:** cacheTtlMs defaults to 0, so every check hits the API. A positive value reuses the boolean until it expires, with at most 1000 entries. defaultValue is returned only when the request fails. A missing flag is still false.
 - **Acceptance:**
-- [ ] The default client does not serve a stale toggle.
-- [ ] A network failure returns defaultValue when one was passed.
-- [ ] A network failure throws when defaultValue was not passed.
+- [x] The default client does not serve a stale toggle.
+- [x] A network failure returns defaultValue when one was passed.
+- [x] A network failure throws when defaultValue was not passed.
 - **Test cases:**
 - Run the SDK tests that cover the cache and the failure path.
 - Call twice inside the TTL and confirm the second does not need a new response.
 - **Dependencies:** SDK-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The SDK tests passed for a cache hit, dropping the oldest entry past 1000, and returning defaultValue only when the request fails. A missing boolean in the payload is rejected.
 
 ### SEC-01 Security headers
 
