@@ -23,7 +23,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | AUTH-05 | Login failure limit | P0 | PASSED | 0 | 0 | 0 | The ninth failure from the same address is 429. Another address is not locked. |
 | AUTH-06 | Login error does not reveal which part failed | P1 | PASSED | 0 | 0 | 0 | Unknown email and a wrong password return the same 401 body. |
 | APIKEY-01 | Create and list API keys | P0 | PASSED | 0 | 0 | 0 | The secret is returned once and is absent from the list. |
-| APIKEY-02 | Revoke an API key | P0 | NOT STARTED | | | | |
+| APIKEY-02 | Revoke an API key | P0 | PASSED | 0 | 0 | 0 | Revoke returns 200 and the secret stops working. |
 | FLAG-01 | Create, read, and delete a flag | P0 | NOT STARTED | | | | |
 | FLAG-02 | Toggle and rollout percent | P0 | NOT STARTED | | | | |
 | FLAG-03 | Per-user force on and force off | P0 | NOT STARTED | | | | |
@@ -364,24 +364,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### APIKEY-02 Revoke an API key
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/api-keys/[id]/route.ts
 - **Expected behavior:** An admin can revoke a key. After that, GET /api/v1/evaluate with the secret is unauthorized. Revoking an unknown id does not succeed as if it existed.
 - **Acceptance:**
-- [ ] Evaluate works before revoke and returns 401 after.
-- [ ] A member cannot revoke a key.
-- [ ] Revoking the same key twice is a safe error.
+- [x] Evaluate works before revoke and returns 401 after.
+- [x] A member cannot revoke a key.
+- [x] Revoking the same key twice is a safe error.
 - **Test cases:**
 - Create a key, evaluate, revoke, evaluate again.
 - Revoke with a member session and with no session.
 - **Dependencies:** APIKEY-01, EVAL-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** DELETE of the key returned 200. The same secret then got 401 from evaluate and from the public flag list.
 
 ### FLAG-01 Create, read, and delete a flag
 
