@@ -18,7 +18,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | EVAL-04 | Evaluate responses are not cached by a CDN | P0 | PASSED | 0 | 0 | 0 | Cache-Control private, no-store. The next check saw the toggle. |
 | AUTH-01 | First admin setup | P0 | PASSED | 1 | 1 | 0 | Parallel setup both returned 201. An advisory lock now leaves one admin. |
 | AUTH-02 | Email and password session | P0 | PASSED | 0 | 0 | 0 | Session me is 200. Logged out and expired sessions are 401. Bad types are 400. |
-| AUTH-03 | Sign out | P0 | NOT STARTED | | | | |
+| AUTH-03 | Sign out | P0 | PASSED | 0 | 0 | 0 | Logout returns 200 and the session no longer authenticates. |
 | AUTH-04 | Admin and member roles | P0 | NOT STARTED | | | | |
 | AUTH-05 | Login failure limit | P0 | NOT STARTED | | | | |
 | AUTH-06 | Login error does not reveal which part failed | P1 | NOT STARTED | | | | |
@@ -257,23 +257,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### AUTH-03 Sign out
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/auth/logout/route.ts
 - **Expected behavior:** POST /api/auth/logout clears the session. After that, dashboard routes and /api/auth/me no longer accept the old cookie.
 - **Acceptance:**
-- [ ] Sign out redirects or returns success and the cookie is cleared.
-- [ ] The old cookie cannot open /flags or /api/flags.
+- [x] Sign out redirects or returns success and the cookie is cleared.
+- [x] The old cookie cannot open /flags or /api/flags.
 - **Test cases:**
 - Sign in, sign out, then request /flags and /api/auth/me with the old cookie.
 - Submit logout twice.
 - **Dependencies:** AUTH-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** POST /api/auth/logout returned 200 and the same cookie then got 401 from /api/auth/me.
 
 ### AUTH-04 Admin and member roles
 
