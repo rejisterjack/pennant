@@ -4,7 +4,7 @@ Pennant is a self-hosted feature-flag service. An operator creates a flag in the
 A flag is off, on for everyone, a stable percentage of user ids, or forced on or off for one named user. Each change is an audit event.
 The first account is created at /setup and is an admin. Later people sign in with email and password. Apps use a separate pn_ API key. Members can edit flags. Only an admin manages keys and the team.
 One deployment is one environment, on Vercel with Neon, or locally with Postgres 15 or newer. The reference site is https://pennant.rejisterjack.com and the README says that instance is private.
-This report only reads the tree. Nothing was started, migrated, or changed. Every feature below is NOT STARTED.
+Testing finished on 21 Nov 2026 against a local Postgres 16. 49 features passed. The decision is NO-GO until Next.js is upgraded off 16.4.3.
 
 ## Feature Table
 
