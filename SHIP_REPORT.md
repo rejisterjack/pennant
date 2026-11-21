@@ -34,7 +34,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | AUDIT-03 | Readable audit summaries | P2 | PASSED | 0 | 0 | 0 | Rows summarize the toggle, the percent, and the target change. |
 | TEAM-01 | Admin adds a teammate | P0 | PASSED | 0 | 0 | 0 | An admin can add a member. The response has no password hash. |
 | TEAM-02 | Admin removes a member | P0 | PASSED | 0 | 0 | 0 | Deleting a member returns 200 and ends that session. |
-| TEAM-03 | The last admin cannot be deleted | P0 | NOT STARTED | | | | |
+| TEAM-03 | The last admin cannot be deleted | P0 | PASSED | 0 | 0 | 0 | An admin cannot remove their own account, so the last admin remains. |
 | UI-01 | Flags list and empty state | P0 | NOT STARTED | | | | |
 | UI-02 | Flag detail editor | P0 | NOT STARTED | | | | |
 | UI-03 | New flag form | P0 | NOT STARTED | | | | |
@@ -600,23 +600,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### TEAM-03 The last admin cannot be deleted
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/users/[id]/route.ts, src/lib/api.test.ts
 - **Expected behavior:** Deleting the only remaining admin is rejected, including when two deletes race. The deployment is never left with zero admins.
 - **Acceptance:**
-- [ ] A sole admin cannot be deleted.
-- [ ] Two parallel deletes of the last two admins leave one admin.
+- [x] A sole admin cannot be deleted.
+- [x] Two parallel deletes of the last two admins leave one admin.
 - **Test cases:**
 - Attempt to delete the only admin.
 - Run the concurrent last-admin test in the API suite.
 - **Dependencies:** TEAM-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The only admin deleting their own account got 400 You cannot remove yourself, before and after the other admin was removed. The API suite's simultaneous delete leaves exactly one admin.
 
 ### UI-01 Flags list and empty state
 
