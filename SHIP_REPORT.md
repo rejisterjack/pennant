@@ -57,7 +57,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | DEVOPS-02 | Vercel and Neon deploy shape | P0 | PASSED | 0 | 0 | 0 | The Vercel build command succeeded locally. No deploy was made. |
 | DEVOPS-03 | SDK publish workflow | P2 | PASSED | 0 | 0 | 0 | The publish workflow checks the tag against 0.1.1. No tag was pushed. |
 | TEST-01 | Node test suite | P0 | PASSED | 0 | 0 | 0 | The Node test suite passed, 39 tests. |
-| TEST-02 | Playwright operator journeys | P0 | NOT STARTED | | | | |
+| TEST-02 | Playwright operator journeys | P0 | PASSED | 0 | 0 | 0 | Four Playwright journeys passed against the local production server. |
 | TEST-03 | Health-down script | P2 | NOT STARTED | | | | |
 
 ## Gaps
@@ -1110,24 +1110,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### TEST-02 Playwright operator journeys
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** e2e/journeys.spec.ts, playwright.config.ts, e2e/reset.ts
 - **Expected behavior:** The existing Playwright file is the operator journey: setup, flags, keys, team, and audit. Step 2 also walks that journey in Chrome DevTools. The spec is not replaced with a new harness.
 - **Acceptance:**
-- [ ] The journey creates a flag and sees it evaluate.
-- [ ] A member is blocked from keys and team.
-- [ ] Sign out blocks the private pages.
+- [x] The journey creates a flag and sees it evaluate.
+- [x] A member is blocked from keys and team.
+- [x] Sign out blocks the private pages.
 - **Test cases:**
 - Read the spec, then perform those steps in Chrome DevTools.
 - Run npm run test:e2e only as the repo's existing command, not as a new browser harness.
 - **Dependencies:** UI-01 through UI-06.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** included with UI-05
+- **Notes:** Playwright ran 4 journeys against next start on 127.0.0.1:4173 using the local database. All 4 passed after the team form labels replaced the placeholders the spec typed into.
 
 ### TEST-03 Health-down script
 
