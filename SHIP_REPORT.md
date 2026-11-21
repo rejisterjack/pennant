@@ -44,7 +44,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-07 | Public home page | P2 | NOT STARTED | | | | |
 | UI-08 | Signed-in shell | P1 | NOT STARTED | | | | |
 | UI-09 | Not found and error pages | P1 | NOT STARTED | | | | |
-| UI-10 | Crawl policy | P2 | NOT STARTED | | | | |
+| UI-10 | Crawl policy | P2 | PASSED | 0 | 0 | 0 | robots.txt disallows /. The home page is noindex, nofollow. |
 | SEO-01 | Document title, description, and icon | P1 | NOT STARTED | | | | |
 | SDK-01 | Server SDK package | P0 | NOT STARTED | | | | |
 | SDK-02 | isEnabled calls evaluate | P0 | NOT STARTED | | | | |
@@ -844,23 +844,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-10 Crawl policy
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** src/app/robots.ts, src/app/layout.tsx
 - **Expected behavior:** robots.txt disallows every path. The document metadata also sets robots to noindex, nofollow. The private dashboard is not an indexed site.
 - **Acceptance:**
-- [ ] GET /robots.txt disallows /.
-- [ ] The home document carries noindex.
+- [x] GET /robots.txt disallows /.
+- [x] The home document carries noindex.
 - **Test cases:**
 - Fetch /robots.txt.
 - Read the robots meta on /.
 - **Dependencies:** SEO-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET /robots.txt was 200 and contained User-Agent * and Disallow /. The home document robots meta is noindex, nofollow.
 
 ### SEO-01 Document title, description, and icon
 
