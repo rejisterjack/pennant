@@ -43,7 +43,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-06 | Audit page | P1 | PASSED | 0 | 0 | 1 | Sentences render, the empty filter is clear, and logged-out HTML has no rows. |
 | UI-07 | Public home page | P2 | PASSED | 0 | 0 | 0 | Home renders the heading, sign-in link, and deploy anchor. No live secret. |
 | UI-08 | Signed-in shell | P1 | PASSED | 0 | 0 | 1 | The current page is marked. Sign out returns to the public sign-in screen. |
-| UI-09 | Not found and error pages | P1 | NOT STARTED | | | | |
+| UI-09 | Not found and error pages | P1 | PASSED | 0 | 0 | 1 | Not-found and the safe error page render. The probe page was deleted. |
 | UI-10 | Crawl policy | P2 | PASSED | 0 | 0 | 0 | robots.txt disallows /. The home page is noindex, nofollow. |
 | SEO-01 | Document title, description, and icon | P1 | PASSED | 0 | 0 | 0 | Titles use the Pennant template. /favicon.svg returns 200. |
 | SDK-01 | Server SDK package | P0 | NOT STARTED | | | | |
@@ -820,14 +820,14 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-09 Not found and error pages
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** src/app/not-found.tsx, src/app/error.tsx
 - **Expected behavior:** An unknown page says Page not found and links back to flags. A render error says Something went wrong, offers Try again, and does not print the exception or a secret.
 - **Acceptance:**
-- [ ] A missing URL shows Page not found.
-- [ ] A thrown error does not include the exception text.
-- [ ] Try again calls reset.
+- [x] A missing URL shows Page not found.
+- [x] A thrown error does not include the exception text.
+- [x] Try again calls reset.
 - **Test cases:**
 - Open a missing URL.
 - Throw from a temporary page, confirm the safe copy, and delete that page before the commit.
@@ -836,11 +836,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
 - **Dependencies:** None.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 1
+- **Files Changed:** src/app/not-found.tsx, src/app/error.tsx
+- **Notes:** A missing URL showed Page not found and Back to flags. Its title was only Pennant, so the page now uses the template and the title is Page not found · Pennant. A temporary throwing page showed Something went wrong and Try again, which calls reset, and did not include the exception text. That page was deleted and is not in git. The error title is Error · Pennant.
 
 ### UI-10 Crawl policy
 
