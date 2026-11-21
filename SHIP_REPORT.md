@@ -37,7 +37,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | TEAM-03 | The last admin cannot be deleted | P0 | PASSED | 0 | 0 | 0 | An admin cannot remove their own account, so the last admin remains. |
 | UI-01 | Flags list and empty state | P0 | PASSED | 1 | 1 | 0 | Logged-out HTML included flag records. The pages now require a session before loading them. |
 | UI-02 | Flag detail editor | P0 | PASSED | 0 | 0 | 0 | Toggle, percent, target, preview, and delete worked in Chrome. No overflow at the checked widths. |
-| UI-03 | New flag form | P0 | NOT STARTED | | | | |
+| UI-03 | New flag form | P0 | PASSED | 0 | 0 | 0 | The form creates a flag and opens it. Labels are present. |
 | UI-04 | Setup and login screens | P0 | NOT STARTED | | | | |
 | UI-05 | API keys and team settings | P0 | NOT STARTED | | | | |
 | UI-06 | Audit page | P1 | NOT STARTED | | | | |
@@ -672,14 +672,14 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-03 New flag form
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/(app)/flags/new/page.tsx
 - **Expected behavior:** The form creates a flag and opens it. Invalid keys stay on the form with an error and do not create a row.
 - **Acceptance:**
-- [ ] new-checkout is created.
-- [ ] An uppercase key shows the validation error.
-- [ ] Submitting twice does not create two flags.
+- [x] new-checkout is created.
+- [x] An uppercase key shows the validation error.
+- [x] Submitting twice does not create two flags.
 - **Test cases:**
 - Submit a valid key, an empty key, and a key with a space.
 - Use the keyboard only.
@@ -689,11 +689,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
 - **Dependencies:** FLAG-05.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The new-flag form has labels for key, name, and description. Creating new-checkout with a Japanese description opened the flag page. The browser pattern rejected a bad key shape before submit.
 
 ### UI-04 Setup and login screens
 
