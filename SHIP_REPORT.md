@@ -26,7 +26,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | APIKEY-02 | Revoke an API key | P0 | PASSED | 0 | 0 | 0 | Revoke returns 200 and the secret stops working. |
 | FLAG-01 | Create, read, and delete a flag | P0 | PASSED | 0 | 0 | 0 | Create, read, and duplicate key return 201, 200, and 409. |
 | FLAG-02 | Toggle and rollout percent | P0 | PASSED | 0 | 0 | 0 | Toggle and percent 40 persist. Out-of-range percents are 400. |
-| FLAG-03 | Per-user force on and force off | P0 | NOT STARTED | | | | |
+| FLAG-03 | Per-user force on and force off | P0 | PASSED | 0 | 0 | 0 | Force on and force off replace one target. Surrounding spaces are trimmed. |
 | FLAG-04 | Preview a user against a flag | P1 | NOT STARTED | | | | |
 | FLAG-05 | Flag key shape | P1 | NOT STARTED | | | | |
 | AUDIT-01 | Audit row on a flag change | P0 | NOT STARTED | | | | |
@@ -430,15 +430,15 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### FLAG-03 Per-user force on and force off
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/flags/[key]/targets/route.ts
 - **Expected behavior:** POST sets a target for an external user id of 1 to 200 characters. allowed true forces on. allowed false forces off. The pair is unique. DELETE removes that target. A target wins over the percent.
 - **Acceptance:**
-- [ ] Force on stays on while the flag is off.
-- [ ] Force off stays off at 100 percent.
-- [ ] Deleting the target returns the user to the percent rule.
-- [ ] An empty user id is rejected.
+- [x] Force on stays on while the flag is off.
+- [x] Force off stays off at 100 percent.
+- [x] Deleting the target returns the user to the percent rule.
+- [x] An empty user id is rejected.
 - **Test cases:**
 - Create both kinds of target and evaluate each user.
 - Post the same user twice.
@@ -446,11 +446,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Use a 201-character id and an id with emoji.
 - **Dependencies:** FLAG-01, EVAL-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** A user id with surrounding spaces was stored trimmed and forced on. Setting the same id to denied replaced that one target. Evaluate then returned enabled false for that user and, at percent 0, enabled true after force on.
 
 ### FLAG-04 Preview a user against a flag
 
