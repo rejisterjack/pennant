@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { io } from "next/cache";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { FlagEditor } from "@/components/flag-editor";
 import { listAudit } from "@/lib/audit";
+import { currentUser } from "@/lib/current-user";
 import { HttpError } from "@/lib/http";
 import { getFlag } from "@/lib/flags";
 
@@ -18,6 +19,8 @@ export default function FlagPage({ params }: { params: Promise<{ key: string }> 
 
 async function FlagDetail({ params }: { params: Promise<{ key: string }> }) {
   await io();
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const { key } = await params;
   const loaded = await loadFlagPage(key);
   return (

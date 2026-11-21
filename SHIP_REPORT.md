@@ -35,7 +35,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | TEAM-01 | Admin adds a teammate | P0 | PASSED | 0 | 0 | 0 | An admin can add a member. The response has no password hash. |
 | TEAM-02 | Admin removes a member | P0 | PASSED | 0 | 0 | 0 | Deleting a member returns 200 and ends that session. |
 | TEAM-03 | The last admin cannot be deleted | P0 | PASSED | 0 | 0 | 0 | An admin cannot remove their own account, so the last admin remains. |
-| UI-01 | Flags list and empty state | P0 | NOT STARTED | | | | |
+| UI-01 | Flags list and empty state | P0 | PASSED | 1 | 1 | 0 | Logged-out HTML included flag records. The pages now require a session before loading them. |
 | UI-02 | Flag detail editor | P0 | NOT STARTED | | | | |
 | UI-03 | New flag form | P0 | NOT STARTED | | | | |
 | UI-04 | Setup and login screens | P0 | NOT STARTED | | | | |
@@ -620,14 +620,14 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-01 Flags list and empty state
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/(app)/flags/page.tsx
 - **Expected behavior:** A signed-in user sees the flags or a clear empty state. A logged-out visit does not show the list.
 - **Acceptance:**
-- [ ] An empty account shows the empty state.
-- [ ] After one flag exists, the list shows its key and name.
-- [ ] The list has no horizontal overflow at 360, 768, 1024, and 1440.
+- [x] An empty account shows the empty state.
+- [x] After one flag exists, the list shows its key and name.
+- [x] The list has no horizontal overflow at 360, 768, 1024, and 1440.
 - **Test cases:**
 - Open /flags signed out, then signed in with no flags, then with one flag.
 - Check the console for errors.
@@ -638,11 +638,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
 - **Dependencies:** FLAG-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 1
+- **Bugs Fixed:** 1
+- **UI Issues Fixed:** 0
+- **Files Changed:** src/app/(app)/flags/page.tsx, src/app/(app)/audit/page.tsx, src/app/(app)/flags/[key]/page.tsx, src/lib/security.test.ts
+- **Notes:** Chrome on the local server showed the empty state, then the created flag with its percent. A logged-out GET /flags, /audit, and /flags/new-checkout embedded the flag name, description, and actor email in the HTML. Those pages now read the session and redirect before loading private data. A regression test locks that order. After delete, the list returned to No flags yet.
 
 ### UI-02 Flag detail editor
 

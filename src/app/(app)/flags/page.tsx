@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { io } from "next/cache";
+import { redirect } from "next/navigation";
+import { currentUser } from "@/lib/current-user";
 import { listFlags } from "@/lib/flags";
 import { flagSummary } from "@/lib/reasons";
 
@@ -16,6 +18,8 @@ export default function FlagsPage() {
 
 async function FlagList() {
   await io();
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const flags = await listFlags();
   return (
     <div>
