@@ -19,7 +19,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | AUTH-01 | First admin setup | P0 | PASSED | 1 | 1 | 0 | Parallel setup both returned 201. An advisory lock now leaves one admin. |
 | AUTH-02 | Email and password session | P0 | PASSED | 0 | 0 | 0 | Session me is 200. Logged out and expired sessions are 401. Bad types are 400. |
 | AUTH-03 | Sign out | P0 | PASSED | 0 | 0 | 0 | Logout returns 200 and the session no longer authenticates. |
-| AUTH-04 | Admin and member roles | P0 | NOT STARTED | | | | |
+| AUTH-04 | Admin and member roles | P0 | PASSED | 0 | 0 | 0 | Members edit flags. Keys and team changes are 403 for a member. |
 | AUTH-05 | Login failure limit | P0 | NOT STARTED | | | | |
 | AUTH-06 | Login error does not reveal which part failed | P1 | NOT STARTED | | | | |
 | APIKEY-01 | Create and list API keys | P0 | NOT STARTED | | | | |
@@ -277,25 +277,25 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### AUTH-04 Admin and member roles
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/lib/actors.ts, src/app/api/api-keys/route.ts, src/app/api/users/route.ts
 - **Expected behavior:** A member can use flags. Creating and listing API keys, creating users, and deleting users require an admin. A member receives a forbidden response on those routes.
 - **Acceptance:**
-- [ ] A member can open flags.
-- [ ] A member cannot create an API key or a teammate.
-- [ ] An admin can do both.
+- [x] A member can open flags.
+- [x] A member cannot create an API key or a teammate.
+- [x] An admin can do both.
 - **Test cases:**
 - Sign in as a member and request the key and team routes.
 - Repeat as the admin.
 - Call those routes with no session.
 - **Dependencies:** TEAM-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** A member creating a flag got 201. The same member got 403 on creating a key, listing keys, adding a user, and deleting a user. An admin created keys and users.
 
 ### AUTH-05 Login failure limit
 
