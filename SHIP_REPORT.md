@@ -54,7 +54,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | SEC-03 | Concurrent evaluate load | P2 | PASSED | 0 | 0 | 0 | 200 concurrent evaluates completed with no server error. |
 | HTTP-01 | Session required on dashboard APIs | P0 | PASSED | 0 | 0 | 0 | Dashboard routes require a session. An API key is not a session. |
 | DEVOPS-01 | GitHub Actions CI | P0 | PASSED | 0 | 0 | 0 | The CI steps passed locally. The workflow was not pushed. |
-| DEVOPS-02 | Vercel and Neon deploy shape | P0 | NOT STARTED | | | | |
+| DEVOPS-02 | Vercel and Neon deploy shape | P0 | PASSED | 0 | 0 | 0 | The Vercel build command succeeded locally. No deploy was made. |
 | DEVOPS-03 | SDK publish workflow | P2 | NOT STARTED | | | | |
 | TEST-01 | Node test suite | P0 | NOT STARTED | | | | |
 | TEST-02 | Playwright operator journeys | P0 | NOT STARTED | | | | |
@@ -1050,24 +1050,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### DEVOPS-02 Vercel and Neon deploy shape
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** vercel.json, README.md
 - **Expected behavior:** One deployment is one environment. The build migrates with DIRECT_URL and serves with DATABASE_URL. AUTH_SECRET must be at least 16 characters. The reference site is https://pennant.rejisterjack.com and the README says it is private.
 - **Acceptance:**
-- [ ] vercel.json matches the README build command.
-- [ ] Step 2 does not print a production secret.
-- [ ] The reference host is checked only as a public page, not with a guessed password.
+- [x] vercel.json matches the README build command.
+- [x] Step 2 does not print a production secret.
+- [x] The reference host is checked only as a public page, not with a guessed password.
 - **Test cases:**
 - Read the config.
 - In step 2, request the public home page and /api/health without signing in.
 - **Dependencies:** DATA-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** vercel.json builds with prisma db migrate && next build. README documents the pooled DATABASE_URL and the direct DIRECT_URL. The same build command succeeded locally against Postgres 16. The private reference site was not opened and this pass did not deploy.
 
 ### DEVOPS-03 SDK publish workflow
 
