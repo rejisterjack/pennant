@@ -41,7 +41,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-04 | Setup and login screens | P0 | PASSED | 0 | 0 | 0 | Setup, a wrong password, and the closed setup screen worked in Chrome. |
 | UI-05 | API keys and team settings | P0 | PASSED | 0 | 0 | 1 | The one-time secret disappears on refresh. Team fields now have visible labels. |
 | UI-06 | Audit page | P1 | PASSED | 0 | 0 | 1 | Sentences render, the empty filter is clear, and logged-out HTML has no rows. |
-| UI-07 | Public home page | P2 | NOT STARTED | | | | |
+| UI-07 | Public home page | P2 | PASSED | 0 | 0 | 0 | Home renders the heading, sign-in link, and deploy anchor. No live secret. |
 | UI-08 | Signed-in shell | P1 | NOT STARTED | | | | |
 | UI-09 | Not found and error pages | P1 | NOT STARTED | | | | |
 | UI-10 | Crawl policy | P2 | PASSED | 0 | 0 | 0 | robots.txt disallows /. The home page is noindex, nofollow. |
@@ -770,14 +770,14 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-07 Public home page
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** src/app/page.tsx
 - **Expected behavior:** The home page explains the product, links to sign in, and links to the Vercel deploy button. The code sample uses the SDK and does not contain a real key.
 - **Acceptance:**
-- [ ] The heading and the sign-in link render.
-- [ ] The sample has no live secret.
-- [ ] The page is readable at 360 pixels.
+- [x] The heading and the sign-in link render.
+- [x] The sample has no live secret.
+- [x] The page is readable at 360 pixels.
 - **Test cases:**
 - Open / signed out.
 - Follow Sign in and confirm it lands on /login.
@@ -787,11 +787,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
 - **Dependencies:** None.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The home page heading and Sign in link rendered. The sample uses PENNANT_API_KEY from the environment, not a live secret. Deploy to Vercel is a real anchor. At 360 pixels the page did not overflow. The paper background is rgb(244, 240, 230).
 
 ### UI-08 Signed-in shell
 
