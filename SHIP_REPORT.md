@@ -42,7 +42,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-05 | API keys and team settings | P0 | PASSED | 0 | 0 | 1 | The one-time secret disappears on refresh. Team fields now have visible labels. |
 | UI-06 | Audit page | P1 | PASSED | 0 | 0 | 1 | Sentences render, the empty filter is clear, and logged-out HTML has no rows. |
 | UI-07 | Public home page | P2 | PASSED | 0 | 0 | 0 | Home renders the heading, sign-in link, and deploy anchor. No live secret. |
-| UI-08 | Signed-in shell | P1 | NOT STARTED | | | | |
+| UI-08 | Signed-in shell | P1 | PASSED | 0 | 0 | 1 | The current page is marked. Sign out returns to the public sign-in screen. |
 | UI-09 | Not found and error pages | P1 | NOT STARTED | | | | |
 | UI-10 | Crawl policy | P2 | PASSED | 0 | 0 | 0 | robots.txt disallows /. The home page is noindex, nofollow. |
 | SEO-01 | Document title, description, and icon | P1 | PASSED | 0 | 0 | 0 | Titles use the Pennant template. /favicon.svg returns 200. |
@@ -795,14 +795,14 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-08 Signed-in shell
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** src/components/shell.tsx, src/app/(app)/layout.tsx
 - **Expected behavior:** The signed-in shell links to flags, audit, and the settings an admin can use. Sign out is available. A logged-out request does not render the shell's private data.
 - **Acceptance:**
-- [ ] Each nav link opens the right page.
-- [ ] Sign out returns to the public side.
-- [ ] The nav fits at 360 pixels.
+- [x] Each nav link opens the right page.
+- [x] Sign out returns to the public side.
+- [x] The nav fits at 360 pixels.
 - **Test cases:**
 - Click every nav item and sign out.
 - Reload a private page and use the back button.
@@ -812,11 +812,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
 - **Dependencies:** AUTH-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 1
+- **Files Changed:** src/components/shell.tsx, src/components/shell-nav.tsx
+- **Notes:** Flags, Audit, API keys, and Team each opened the right page. Sign out returned to Sign in. The nav had no current-page indication. The current link now sets aria-current=page and uses the accent color, and the links keep a visible focus outline. At 360 pixels the nav did not overflow. A logged-out request does not render the private shell.
 
 ### UI-09 Not found and error pages
 
