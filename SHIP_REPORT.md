@@ -50,7 +50,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | SDK-02 | isEnabled calls evaluate | P0 | NOT STARTED | | | | |
 | SDK-03 | Cache and default value | P1 | NOT STARTED | | | | |
 | SEC-01 | Security headers | P1 | PASSED | 0 | 0 | 0 | The documented security headers are on the home response. |
-| SEC-02 | Health check | P0 | NOT STARTED | | | | |
+| SEC-02 | Health check | P0 | PASSED | 0 | 0 | 0 | Health is 200 {ok:true} with a private no-store cache header. |
 | SEC-03 | Concurrent evaluate load | P2 | NOT STARTED | | | | |
 | HTTP-01 | Session required on dashboard APIs | P0 | PASSED | 0 | 0 | 0 | Dashboard routes require a session. An API key is not a session. |
 | DEVOPS-01 | GitHub Actions CI | P0 | NOT STARTED | | | | |
@@ -968,25 +968,25 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### SEC-02 Health check
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/health/route.ts, src/lib/health-down.test.ts
 - **Expected behavior:** GET /api/health runs SELECT 1. It returns ok true when the database answers and ok false with status 503 when it does not. The failure is logged on the server and the response does not include the exception text.
 - **Acceptance:**
-- [ ] A healthy database returns 200 and ok true.
-- [ ] An unreachable database returns 503 and ok false.
-- [ ] The 503 body has no stack trace.
+- [x] A healthy database returns 200 and ok true.
+- [x] An unreachable database returns 503 and ok false.
+- [x] The 503 body has no stack trace.
 - **Test cases:**
 - Call /api/health against the test database.
 - Point a process at a closed port and call it again.
 - Confirm POST /api/health is not a successful check.
 - **Dependencies:** DATA-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET /api/health returned 200 {ok:true} and Cache-Control private, no-store while Postgres was up.
 
 ### SEC-03 Concurrent evaluate load
 
