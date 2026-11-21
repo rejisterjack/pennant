@@ -51,7 +51,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | SDK-03 | Cache and default value | P1 | PASSED | 0 | 0 | 0 | Cache reuse and defaultValue-on-failure passed in the SDK tests. |
 | SEC-01 | Security headers | P1 | PASSED | 0 | 0 | 0 | The documented security headers are on the home response. |
 | SEC-02 | Health check | P0 | PASSED | 0 | 0 | 0 | Health is 200 {ok:true} with a private no-store cache header. |
-| SEC-03 | Concurrent evaluate load | P2 | NOT STARTED | | | | |
+| SEC-03 | Concurrent evaluate load | P2 | PASSED | 0 | 0 | 0 | 200 concurrent evaluates completed with no server error. |
 | HTTP-01 | Session required on dashboard APIs | P0 | PASSED | 0 | 0 | 0 | Dashboard routes require a session. An API key is not a session. |
 | DEVOPS-01 | GitHub Actions CI | P0 | NOT STARTED | | | | |
 | DEVOPS-02 | Vercel and Neon deploy shape | P0 | NOT STARTED | | | | |
@@ -990,22 +990,22 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### SEC-03 Concurrent evaluate load
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** src/lib/load.test.ts
 - **Expected behavior:** The load test sends 200 concurrent evaluate checks. They complete without a crash and without mixing one user's result into another.
 - **Acceptance:**
-- [ ] 200 checks finish.
-- [ ] A forced-on user stays on and a forced-off user stays off under concurrency.
+- [x] 200 checks finish.
+- [x] A forced-on user stays on and a forced-off user stays off under concurrency.
 - **Test cases:**
 - Run the load test once. Do not weaken it if it fails.
 - **Dependencies:** EVAL-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The load test served 200 concurrent evaluate checks with no server errors. It is included in npm test, which passed 39 tests.
 
 ### HTTP-01 Session required on dashboard APIs
 
