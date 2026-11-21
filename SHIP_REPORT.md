@@ -28,7 +28,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | FLAG-02 | Toggle and rollout percent | P0 | PASSED | 0 | 0 | 0 | Toggle and percent 40 persist. Out-of-range percents are 400. |
 | FLAG-03 | Per-user force on and force off | P0 | PASSED | 0 | 0 | 0 | Force on and force off replace one target. Surrounding spaces are trimmed. |
 | FLAG-04 | Preview a user against a flag | P1 | PASSED | 0 | 0 | 0 | Preview returns the decision reason. A missing flag is 404. |
-| FLAG-05 | Flag key shape | P1 | NOT STARTED | | | | |
+| FLAG-05 | Flag key shape | P1 | PASSED | 0 | 0 | 0 | Uppercase, a leading digit, and a 65-character key are rejected. |
 | AUDIT-01 | Audit row on a flag change | P0 | NOT STARTED | | | | |
 | AUDIT-02 | List and filter the audit log | P1 | NOT STARTED | | | | |
 | AUDIT-03 | Readable audit summaries | P2 | NOT STARTED | | | | |
@@ -475,23 +475,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### FLAG-05 Flag key shape
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** src/lib/validate.ts, src/lib/validate.test.ts
 - **Expected behavior:** A flag key must start with a letter and then use only lowercase letters, numbers, and hyphens, with a total length of 1 to 64. Uppercase, spaces, and slashes are rejected.
 - **Acceptance:**
-- [ ] new-checkout is accepted.
-- [ ] New, a space, a slash, and a 65-character key are rejected.
+- [x] new-checkout is accepted.
+- [x] New, a space, a slash, and a 65-character key are rejected.
 - **Test cases:**
 - Run the validate unit tests.
 - Submit the new-flag form with each rejected shape.
 - **Dependencies:** FLAG-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** New_Checkout, a leading digit, and a 65-character key were 400 with the key-shape error. new-checkout was accepted.
 
 ### AUDIT-01 Audit row on a flag change
 
