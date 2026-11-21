@@ -45,7 +45,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-08 | Signed-in shell | P1 | NOT STARTED | | | | |
 | UI-09 | Not found and error pages | P1 | NOT STARTED | | | | |
 | UI-10 | Crawl policy | P2 | PASSED | 0 | 0 | 0 | robots.txt disallows /. The home page is noindex, nofollow. |
-| SEO-01 | Document title, description, and icon | P1 | NOT STARTED | | | | |
+| SEO-01 | Document title, description, and icon | P1 | PASSED | 0 | 0 | 0 | Titles use the Pennant template. /favicon.svg returns 200. |
 | SDK-01 | Server SDK package | P0 | NOT STARTED | | | | |
 | SDK-02 | isEnabled calls evaluate | P0 | NOT STARTED | | | | |
 | SDK-03 | Cache and default value | P1 | NOT STARTED | | | | |
@@ -864,24 +864,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### SEO-01 Document title, description, and icon
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** src/app/layout.tsx, public/favicon.svg, public/logo.svg
 - **Expected behavior:** The default title is Pennant and the template is the page name plus Pennant. The description is the self-hosted flag sentence. The icon is /favicon.svg.
 - **Acceptance:**
-- [ ] The home title is Pennant.
-- [ ] A private page uses the template.
-- [ ] The favicon request succeeds.
+- [x] The home title is Pennant.
+- [x] A private page uses the template.
+- [x] The favicon request succeeds.
 - **Test cases:**
 - Read the title on /, /login, and /flags.
 - Request /favicon.svg.
 - **Dependencies:** None.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The home title is Pennant. /login is Sign in · Pennant, /setup is Setup · Pennant, and /flags is Flags · Pennant. The description meta matches the layout. GET /favicon.svg returned 200 image/svg+xml.
 
 ### SDK-01 Server SDK package
 
