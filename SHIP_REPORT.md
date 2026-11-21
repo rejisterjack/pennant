@@ -17,7 +17,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | EVAL-03 | GET /api/v1/flags | P1 | PASSED | 0 | 0 | 0 | List includes the flag and rollout. No secret fields. Revoked key is 401. |
 | EVAL-04 | Evaluate responses are not cached by a CDN | P0 | PASSED | 0 | 0 | 0 | Cache-Control private, no-store. The next check saw the toggle. |
 | AUTH-01 | First admin setup | P0 | PASSED | 1 | 1 | 0 | Parallel setup both returned 201. An advisory lock now leaves one admin. |
-| AUTH-02 | Email and password session | P0 | NOT STARTED | | | | |
+| AUTH-02 | Email and password session | P0 | PASSED | 0 | 0 | 0 | Session me is 200. Logged out and expired sessions are 401. Bad types are 400. |
 | AUTH-03 | Sign out | P0 | NOT STARTED | | | | |
 | AUTH-04 | Admin and member roles | P0 | NOT STARTED | | | | |
 | AUTH-05 | Login failure limit | P0 | NOT STARTED | | | | |
@@ -234,26 +234,26 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### AUTH-02 Email and password session
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/auth/login/route.ts, src/app/api/auth/me/route.ts, src/lib/cookies.ts
 - **Expected behavior:** Login checks the password with scrypt and sets an httpOnly session cookie. GET /api/auth/me returns the signed-in user. A wrong password and an unknown email fail without creating a session.
 - **Acceptance:**
-- [ ] A correct password sets the cookie and /api/auth/me returns that user.
-- [ ] A wrong password does not set a session.
-- [ ] The cookie is httpOnly.
-- [ ] An expired session is treated as logged out.
+- [x] A correct password sets the cookie and /api/auth/me returns that user.
+- [x] A wrong password does not set a session.
+- [x] The cookie is httpOnly.
+- [x] An expired session is treated as logged out.
 - **Test cases:**
 - Log in, call /api/auth/me, and open /flags.
 - Log in with the wrong password, an empty password, and a non-English email that was not registered.
 - Confirm the cookie flags from the Set-Cookie header.
 - **Dependencies:** AUTH-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET /api/auth/me is 200 with the session and 401 without it. Login with the right password is 200. A non-string email, a 5-character password, and a whitespace password are 400. An expired session is 401 on the next me call. A member can sign in.
 
 ### AUTH-03 Sign out
 
