@@ -31,7 +31,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | FLAG-05 | Flag key shape | P1 | PASSED | 0 | 0 | 0 | Uppercase, a leading digit, and a 65-character key are rejected. |
 | AUDIT-01 | Audit row on a flag change | P0 | PASSED | 0 | 0 | 0 | Create, update, and target changes each write an audit row. |
 | AUDIT-02 | List and filter the audit log | P1 | PASSED | 0 | 0 | 0 | The flag filter is exact. Logged-out requests are 401. |
-| AUDIT-03 | Readable audit summaries | P2 | NOT STARTED | | | | |
+| AUDIT-03 | Readable audit summaries | P2 | PASSED | 0 | 0 | 0 | Rows summarize the toggle, the percent, and the target change. |
 | TEAM-01 | Admin adds a teammate | P0 | NOT STARTED | | | | |
 | TEAM-02 | Admin removes a member | P0 | NOT STARTED | | | | |
 | TEAM-03 | The last admin cannot be deleted | P0 | NOT STARTED | | | | |
@@ -537,23 +537,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### AUDIT-03 Readable audit summaries
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** src/lib/audit-summary.ts, src/lib/audit-summary.test.ts
 - **Expected behavior:** The dashboard shows a sentence for each audit action instead of only the raw JSON. The summary does not include secrets.
 - **Acceptance:**
-- [ ] A known action renders a sentence that names the flag.
-- [ ] An unknown action does not throw.
+- [x] A known action renders a sentence that names the flag.
+- [x] An unknown action does not throw.
 - **Test cases:**
 - Run the audit-summary unit tests.
 - Open the audit page and read one line.
 - **Dependencies:** AUDIT-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Summaries were Flag created, Turned on, Rollout 100% → 40%, user-ada forced on, and user-ada now forced off. The API suite also expects Flag deleted.
 
 ### TEAM-01 Admin adds a teammate
 
