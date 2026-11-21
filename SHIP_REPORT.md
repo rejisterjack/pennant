@@ -38,7 +38,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-01 | Flags list and empty state | P0 | PASSED | 1 | 1 | 0 | Logged-out HTML included flag records. The pages now require a session before loading them. |
 | UI-02 | Flag detail editor | P0 | PASSED | 0 | 0 | 0 | Toggle, percent, target, preview, and delete worked in Chrome. No overflow at the checked widths. |
 | UI-03 | New flag form | P0 | PASSED | 0 | 0 | 0 | The form creates a flag and opens it. Labels are present. |
-| UI-04 | Setup and login screens | P0 | NOT STARTED | | | | |
+| UI-04 | Setup and login screens | P0 | PASSED | 0 | 0 | 0 | Setup, a wrong password, and the closed setup screen worked in Chrome. |
 | UI-05 | API keys and team settings | P0 | NOT STARTED | | | | |
 | UI-06 | Audit page | P1 | NOT STARTED | | | | |
 | UI-07 | Public home page | P2 | NOT STARTED | | | | |
@@ -697,14 +697,14 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-04 Setup and login screens
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/setup/page.tsx, src/app/login/page.tsx, src/components/auth-forms.tsx
 - **Expected behavior:** Before any user, /setup creates the admin. After that, operators use /login. Both forms show a safe error and do not echo the password.
 - **Acceptance:**
-- [ ] Setup closes once an account exists.
-- [ ] A wrong password stays on the login page.
-- [ ] The password field is type password.
+- [x] Setup closes once an account exists.
+- [x] A wrong password stays on the login page.
+- [x] The password field is type password.
 - **Test cases:**
 - Create the admin, return to /setup, then fail a login and succeed.
 - Check 360 and 1440 widths.
@@ -714,11 +714,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
 - **Dependencies:** AUTH-01, AUTH-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Setup created Ada and landed on Flags. The password input is type password. A wrong password stayed on Sign in and showed Invalid email or password, with the password masked. After an account existed, /setup settled on /login. Setup at 360 pixels did not overflow.
 
 ### UI-05 API keys and team settings
 
