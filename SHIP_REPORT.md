@@ -14,7 +14,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | DATA-02 | Pooled runtime URL and direct migration URL | P0 | PASSED | 0 | 0 | 0 | Runtime uses DATABASE_URL. Migrations use DIRECT_URL, then DATABASE_URL. vercel.json migrates before the build. A missing or 5-character AUTH_SECRET throws. |
 | EVAL-01 | Rollout decision | P0 | PASSED | 0 | 0 | 0 | evaluate.test.ts 9/9. Spaces are no-user. Long, Japanese, emoji, SQL, and markup ids are stable. A trimmed id matches a force-on target while the flag is off. |
 | EVAL-02 | GET /api/v1/evaluate | P0 | PASSED | 0 | 0 | 0 | No token, short token, and a session bearer are 401. Unknown flag is enabled false. Over-long flag and user id are 400. |
-| EVAL-03 | GET /api/v1/flags | P1 | NOT STARTED | | | | |
+| EVAL-03 | GET /api/v1/flags | P1 | PASSED | 0 | 0 | 0 | List includes the flag and rollout. No secret fields. Revoked key is 401. |
 | EVAL-04 | Evaluate responses are not cached by a CDN | P0 | NOT STARTED | | | | |
 | AUTH-01 | First admin setup | P0 | NOT STARTED | | | | |
 | AUTH-02 | Email and password session | P0 | NOT STARTED | | | | |
@@ -170,24 +170,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### EVAL-03 GET /api/v1/flags
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** src/app/api/v1/flags/route.ts
 - **Expected behavior:** A valid API key can list flag definitions for a caller that wants to cache them. The SDK does not evaluate locally. The list does not include password hashes or API key secrets.
 - **Acceptance:**
-- [ ] A valid key receives the flag keys and rollout fields.
-- [ ] No token is rejected.
-- [ ] The payload contains no keyHash and no passwordHash.
+- [x] A valid key receives the flag keys and rollout fields.
+- [x] No token is rejected.
+- [x] The payload contains no keyHash and no passwordHash.
 - **Test cases:**
 - List flags after creating one, then again with a revoked key.
 - Confirm the response has no secret fields.
 - **Dependencies:** EVAL-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** A valid key listed new-checkout with rollout fields. The payload had no passwordHash, keyHash, or the pn_ secret. No token is 401. After revoke, the same key is 401.
 
 ### EVAL-04 Evaluate responses are not cached by a CDN
 
