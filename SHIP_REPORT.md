@@ -20,7 +20,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | AUTH-02 | Email and password session | P0 | PASSED | 0 | 0 | 0 | Session me is 200. Logged out and expired sessions are 401. Bad types are 400. |
 | AUTH-03 | Sign out | P0 | PASSED | 0 | 0 | 0 | Logout returns 200 and the session no longer authenticates. |
 | AUTH-04 | Admin and member roles | P0 | PASSED | 0 | 0 | 0 | Members edit flags. Keys and team changes are 403 for a member. |
-| AUTH-05 | Login failure limit | P0 | NOT STARTED | | | | |
+| AUTH-05 | Login failure limit | P0 | PASSED | 0 | 0 | 0 | The ninth failure from the same address is 429. Another address is not locked. |
 | AUTH-06 | Login error does not reveal which part failed | P1 | NOT STARTED | | | | |
 | APIKEY-01 | Create and list API keys | P0 | NOT STARTED | | | | |
 | APIKEY-02 | Revoke an API key | P0 | NOT STARTED | | | | |
@@ -299,25 +299,25 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### AUTH-05 Login failure limit
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/lib/rate-limit.ts, src/lib/rate-limit.test.ts
 - **Expected behavior:** Eight failed sign-ins for the same email and client address are blocked for 15 minutes. The address comes from the first X-Forwarded-For value, trimmed to 80 characters, or unknown. The limit is in process memory.
 - **Acceptance:**
-- [ ] The eighth failure blocks the next attempt inside the window.
-- [ ] A success is not what this counter records. Failures are.
-- [ ] A different email is counted separately.
+- [x] The eighth failure blocks the next attempt inside the window.
+- [x] A success is not what this counter records. Failures are.
+- [x] A different email is counted separately.
 - **Test cases:**
 - Run the rate-limit unit test.
 - Send eight bad passwords and confirm the next attempt is blocked.
 - Confirm a different address is not blocked by that bucket.
 - **Dependencies:** AUTH-02. The counter resets when the process restarts.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Nine failed sign-ins for locked@example.com from 198.51.100.20 ended in 429 Too many attempts. The body did not contain the email. The same email from a different address was still 401.
 
 ### AUTH-06 Login error does not reveal which part failed
 
