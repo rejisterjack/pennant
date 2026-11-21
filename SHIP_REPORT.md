@@ -53,7 +53,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | SEC-02 | Health check | P0 | PASSED | 0 | 0 | 0 | Health is 200 {ok:true} with a private no-store cache header. |
 | SEC-03 | Concurrent evaluate load | P2 | PASSED | 0 | 0 | 0 | 200 concurrent evaluates completed with no server error. |
 | HTTP-01 | Session required on dashboard APIs | P0 | PASSED | 0 | 0 | 0 | Dashboard routes require a session. An API key is not a session. |
-| DEVOPS-01 | GitHub Actions CI | P0 | NOT STARTED | | | | |
+| DEVOPS-01 | GitHub Actions CI | P0 | PASSED | 0 | 0 | 0 | The CI steps passed locally. The workflow was not pushed. |
 | DEVOPS-02 | Vercel and Neon deploy shape | P0 | NOT STARTED | | | | |
 | DEVOPS-03 | SDK publish workflow | P2 | NOT STARTED | | | | |
 | TEST-01 | Node test suite | P0 | NOT STARTED | | | | |
@@ -1030,23 +1030,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### DEVOPS-01 GitHub Actions CI
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** .github/workflows/ci.yml
 - **Expected behavior:** On a pull request and on a push to main, CI uses Postgres 16, runs prisma db migrate, typecheck, lint, npm test, the SDK build, the Next build, and Playwright. The CI auth secret is a fixture, not a production secret.
 - **Acceptance:**
-- [ ] The workflow file contains those steps in that order.
-- [ ] Step 2 runs the same commands locally where they do not need a browser vendor install beyond what the repo already uses.
+- [x] The workflow file contains those steps in that order.
+- [x] Step 2 runs the same commands locally where they do not need a browser vendor install beyond what the repo already uses.
 - **Test cases:**
 - Read the workflow.
 - Run typecheck, lint, and npm test against a local test database in step 2.
 - **Dependencies:** DATA-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The CI workflow runs on pull requests and pushes to main with Postgres 16, then npm ci, prisma db migrate, typecheck, lint, npm test, the SDK build, next build, and Playwright. Those commands passed locally. This pass did not push, so GitHub Actions was not triggered.
 
 ### DEVOPS-02 Vercel and Neon deploy shape
 
