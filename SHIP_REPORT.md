@@ -36,7 +36,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | TEAM-02 | Admin removes a member | P0 | PASSED | 0 | 0 | 0 | Deleting a member returns 200 and ends that session. |
 | TEAM-03 | The last admin cannot be deleted | P0 | PASSED | 0 | 0 | 0 | An admin cannot remove their own account, so the last admin remains. |
 | UI-01 | Flags list and empty state | P0 | PASSED | 1 | 1 | 0 | Logged-out HTML included flag records. The pages now require a session before loading them. |
-| UI-02 | Flag detail editor | P0 | NOT STARTED | | | | |
+| UI-02 | Flag detail editor | P0 | PASSED | 0 | 0 | 0 | Toggle, percent, target, preview, and delete worked in Chrome. No overflow at the checked widths. |
 | UI-03 | New flag form | P0 | NOT STARTED | | | | |
 | UI-04 | Setup and login screens | P0 | NOT STARTED | | | | |
 | UI-05 | API keys and team settings | P0 | NOT STARTED | | | | |
@@ -646,14 +646,14 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-02 Flag detail editor
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/(app)/flags/[key]/page.tsx, src/components/flag-editor.tsx
 - **Expected behavior:** The detail page toggles the flag, sets the percent, and adds or removes a target. The control shows the saved value after refresh.
 - **Acceptance:**
-- [ ] A toggle survives refresh.
-- [ ] A percent outside 0 through 100 is not saved.
-- [ ] The unknown-flag URL uses the not-found page.
+- [x] A toggle survives refresh.
+- [x] A percent outside 0 through 100 is not saved.
+- [x] The unknown-flag URL uses the not-found page.
 - **Test cases:**
 - Toggle, set 0 and 100, add a target, refresh, and go back.
 - Open a missing key.
@@ -664,11 +664,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
 - **Dependencies:** FLAG-02, FLAG-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** In Chrome the editor turned the flag on, saved 40 percent, forced user-ada on, and previewed Enabled with the sentence This user is forced on. Recent changes showed Turned on, the percent change, and the target sentence. Delete asked for confirmation and returned to the empty list. Widths 360, 768, 1024, and 1440 did not overflow.
 
 ### UI-03 New flag form
 
