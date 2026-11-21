@@ -12,7 +12,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | DATA-01 | Postgres schema and migration | P0 | PASSED | 0 | 0 | 0 | Fresh Postgres 16 on 127.0.0.1:54331. Six tables. Rollout 101 rejected by flag_rollout_range. Second migrate left the existing flag. |
 | DATA-02 | Pooled runtime URL and direct migration URL | P0 | PASSED | 0 | 0 | 0 | Runtime uses DATABASE_URL. Migrations use DIRECT_URL, then DATABASE_URL. vercel.json migrates before the build. A missing or 5-character AUTH_SECRET throws. |
-| EVAL-01 | Rollout decision | P0 | NOT STARTED | | | | |
+| EVAL-01 | Rollout decision | P0 | PASSED | 0 | 0 | 0 | evaluate.test.ts 9/9. Spaces are no-user. Long, Japanese, emoji, SQL, and markup ids are stable. A trimmed id matches a force-on target while the flag is off. |
 | EVAL-02 | GET /api/v1/evaluate | P0 | NOT STARTED | | | | |
 | EVAL-03 | GET /api/v1/flags | P1 | NOT STARTED | | | | |
 | EVAL-04 | Evaluate responses are not cached by a CDN | P0 | NOT STARTED | | | | |
@@ -123,26 +123,26 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### EVAL-01 Rollout decision
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/lib/evaluate.ts, src/lib/evaluate.test.ts
 - **Expected behavior:** An unknown flag is off with reason missing. A matching target wins, even when the flag is off or the percent is 100. Otherwise a disabled flag is off. At 100 percent everyone else is on, including a check with no user id. Below 100 percent a missing user id is off, and a user is on only when the SHA-256 bucket of flagKey:userId is strictly below the percent. The bucket is stable.
 - **Acceptance:**
-- [ ] The same flag and user always get the same bucket.
-- [ ] A force-on target is on while the flag is disabled.
-- [ ] A force-off target is off at 100 percent.
-- [ ] Whitespace around a user id is trimmed before the lookup.
+- [x] The same flag and user always get the same bucket.
+- [x] A force-on target is on while the flag is disabled.
+- [x] A force-off target is off at 100 percent.
+- [x] Whitespace around a user id is trimmed before the lookup.
 - **Test cases:**
 - Run the evaluate unit tests.
 - Check a user id of spaces, a very long id, and a non-English id through the pure function.
 - Confirm 0 percent is off except for a force-on target.
 - **Dependencies:** None. This function does not touch the database.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** `tsx --test src/lib/evaluate.test.ts` passed 9 tests. Extra calls: whitespace-only ids are rollout_no_user; a 5000-character id, ユーザー-東京, an emoji id, a SQL fragment, markup, and a path-like id each returned the same result twice. `  ユーザー-東京  ` matched a force-on target while the flag was disabled and the percent was 0.
 
 ### EVAL-02 GET /api/v1/evaluate
 
