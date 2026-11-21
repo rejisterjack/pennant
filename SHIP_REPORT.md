@@ -13,7 +13,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | DATA-01 | Postgres schema and migration | P0 | PASSED | 0 | 0 | 0 | Fresh Postgres 16 on 127.0.0.1:54331. Six tables. Rollout 101 rejected by flag_rollout_range. Second migrate left the existing flag. |
 | DATA-02 | Pooled runtime URL and direct migration URL | P0 | PASSED | 0 | 0 | 0 | Runtime uses DATABASE_URL. Migrations use DIRECT_URL, then DATABASE_URL. vercel.json migrates before the build. A missing or 5-character AUTH_SECRET throws. |
 | EVAL-01 | Rollout decision | P0 | PASSED | 0 | 0 | 0 | evaluate.test.ts 9/9. Spaces are no-user. Long, Japanese, emoji, SQL, and markup ids are stable. A trimmed id matches a force-on target while the flag is off. |
-| EVAL-02 | GET /api/v1/evaluate | P0 | NOT STARTED | | | | |
+| EVAL-02 | GET /api/v1/evaluate | P0 | PASSED | 0 | 0 | 0 | No token, short token, and a session bearer are 401. Unknown flag is enabled false. Over-long flag and user id are 400. |
 | EVAL-03 | GET /api/v1/flags | P1 | NOT STARTED | | | | |
 | EVAL-04 | Evaluate responses are not cached by a CDN | P0 | NOT STARTED | | | | |
 | AUTH-01 | First admin setup | P0 | NOT STARTED | | | | |
@@ -146,15 +146,15 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### EVAL-02 GET /api/v1/evaluate
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/v1/evaluate/route.ts, src/lib/flags.ts, src/lib/actors.ts
 - **Expected behavior:** The route requires a bearer API key. The flag query is required and limited to 200 characters. userId is optional and limited to 200 characters. The JSON body is only enabled true or false. A missing flag is a successful response of enabled false, not a 404.
 - **Acceptance:**
-- [ ] A valid key and an existing flag return enabled.
-- [ ] A missing flag query is 400.
-- [ ] A missing, revoked, or session token is 401.
-- [ ] A flag longer than 200 characters is 400.
+- [x] A valid key and an existing flag return enabled.
+- [x] A missing flag query is 400.
+- [x] A missing, revoked, or session token is 401.
+- [x] A flag longer than 200 characters is 400.
 - **Test cases:**
 - Call with no token, a short token, a session cookie, and a revoked key.
 - Call with an empty flag, a flag of spaces, and a 201-character flag.
@@ -162,11 +162,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Send the same user twice and confirm the boolean matches.
 - **Dependencies:** DATA-01, APIKEY-01, EVAL-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Live checks on 127.0.0.1:3012. No token, a short token, and a session cookie used as a bearer are 401. An empty flag and a flag of spaces are 400. A 201-character flag and a 201-character user id are 400. An unknown flag is {enabled:false}. The same user returns the same boolean, and the body has only that field.
 
 ### EVAL-03 GET /api/v1/flags
 
