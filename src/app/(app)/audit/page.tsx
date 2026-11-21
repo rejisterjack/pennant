@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { io } from "next/cache";
+import { redirect } from "next/navigation";
 import { listAudit } from "@/lib/audit";
+import { currentUser } from "@/lib/current-user";
 
 export const metadata = { title: "Audit" };
 
@@ -18,18 +20,23 @@ export default function AuditPage({
 
 async function AuditList({ searchParams }: { searchParams: Promise<{ flag?: string }> }) {
   await io();
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const { flag } = await searchParams;
   const events = await listAudit(flag?.trim() || undefined);
   return (
     <div>
       <h1 className="text-2xl font-semibold">Audit</h1>
-      <form className="mt-6 flex gap-3">
-        <input
-          name="flag"
-          defaultValue={flag ?? ""}
-          placeholder="Filter by flag key"
-          className="h-11 rounded-md border border-line bg-card px-3 font-mono text-sm"
-        />
+      <form className="mt-6 flex items-end gap-3">
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="font-medium">Flag key</span>
+          <input
+            name="flag"
+            defaultValue={flag ?? ""}
+            aria-label="Flag key"
+            className="h-11 rounded-md border border-line bg-card px-3 font-mono text-sm"
+          />
+        </label>
         <button type="submit" className="h-11 rounded-md border border-line px-4 text-sm font-medium">
           Filter
         </button>

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import robots from "../app/robots.ts";
 import nextConfig from "../../next.config.ts";
@@ -14,6 +15,20 @@ describe("security headers", () => {
     assert.equal(headers["Referrer-Policy"], "strict-origin-when-cross-origin");
     assert.equal(headers["Permissions-Policy"], "camera=(), microphone=(), geolocation=()");
     assert.deepEqual(robots().rules, { userAgent: "*", disallow: "/" });
+  });
+
+  it("reads the session before rendering private flag and audit data", () => {
+    const pages = [
+      ["../app/(app)/flags/page.tsx", "await listFlags()"],
+      ["../app/(app)/audit/page.tsx", "await listAudit("],
+      ["../app/(app)/flags/[key]/page.tsx", "await getFlag("],
+    ] as const;
+    for (const [file, query] of pages) {
+      const source = readFileSync(new URL(file, import.meta.url), "utf8");
+      const session = source.indexOf("await currentUser()");
+      const load = source.indexOf(query);
+      assert.ok(session > 0 && load > session, file);
+    }
   });
 
   it("does not put internal errors in the response body", async () => {

@@ -1,0 +1,1218 @@
+# Ship Readiness Report — Pennant
+
+Pennant is a self-hosted feature-flag service. An operator creates a flag in the Next.js dashboard, and an app checks it with the server SDK or with GET /api/v1/evaluate.
+A flag is off, on for everyone, a stable percentage of user ids, or forced on or off for one named user. Each change is an audit event.
+The first account is created at /setup and is an admin. Later people sign in with email and password. Apps use a separate pn_ API key. Members can edit flags. Only an admin manages keys and the team.
+One deployment is one environment, on Vercel with Neon, or locally with Postgres 15 or newer. The reference site is https://pennant.rejisterjack.com and the README says that instance is private.
+Testing finished on 21 Nov 2026 against a local Postgres 16. 49 features passed. Next.js is 16.4.6. The decision is GO.
+
+## Feature Table
+
+| ID | Feature | Priority | Status | Bugs Found | Bugs Fixed | UI Issues Fixed | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| DATA-01 | Postgres schema and migration | P0 | PASSED | 0 | 0 | 0 | Fresh Postgres 16 on 127.0.0.1:54331. Six tables. Rollout 101 rejected by flag_rollout_range. Second migrate left the existing flag. |
+| DATA-02 | Pooled runtime URL and direct migration URL | P0 | PASSED | 0 | 0 | 0 | Runtime uses DATABASE_URL. Migrations use DIRECT_URL, then DATABASE_URL. vercel.json migrates before the build. A missing or 5-character AUTH_SECRET throws. |
+| EVAL-01 | Rollout decision | P0 | PASSED | 0 | 0 | 0 | evaluate.test.ts 9/9. Spaces are no-user. Long, Japanese, emoji, SQL, and markup ids are stable. A trimmed id matches a force-on target while the flag is off. |
+| EVAL-02 | GET /api/v1/evaluate | P0 | PASSED | 0 | 0 | 0 | No token, short token, and a session bearer are 401. Unknown flag is enabled false. Over-long flag and user id are 400. |
+| EVAL-03 | GET /api/v1/flags | P1 | PASSED | 0 | 0 | 0 | List includes the flag and rollout. No secret fields. Revoked key is 401. |
+| EVAL-04 | Evaluate responses are not cached by a CDN | P0 | PASSED | 0 | 0 | 0 | Cache-Control private, no-store. The next check saw the toggle. |
+| AUTH-01 | First admin setup | P0 | PASSED | 1 | 1 | 0 | Parallel setup both returned 201. An advisory lock now leaves one admin. |
+| AUTH-02 | Email and password session | P0 | PASSED | 0 | 0 | 0 | Session me is 200. Logged out and expired sessions are 401. Bad types are 400. |
+| AUTH-03 | Sign out | P0 | PASSED | 0 | 0 | 0 | Logout returns 200 and the session no longer authenticates. |
+| AUTH-04 | Admin and member roles | P0 | PASSED | 0 | 0 | 0 | Members edit flags. Keys and team changes are 403 for a member. |
+| AUTH-05 | Login failure limit | P0 | PASSED | 0 | 0 | 0 | The ninth failure from the same address is 429. Another address is not locked. |
+| AUTH-06 | Login error does not reveal which part failed | P1 | PASSED | 0 | 0 | 0 | Unknown email and a wrong password return the same 401 body. |
+| APIKEY-01 | Create and list API keys | P0 | PASSED | 0 | 0 | 0 | The secret is returned once and is absent from the list. |
+| APIKEY-02 | Revoke an API key | P0 | PASSED | 0 | 0 | 0 | Revoke returns 200 and the secret stops working. |
+| FLAG-01 | Create, read, and delete a flag | P0 | PASSED | 0 | 0 | 0 | Create, read, and duplicate key return 201, 200, and 409. |
+| FLAG-02 | Toggle and rollout percent | P0 | PASSED | 0 | 0 | 0 | Toggle and percent 40 persist. Out-of-range percents are 400. |
+| FLAG-03 | Per-user force on and force off | P0 | PASSED | 0 | 0 | 0 | Force on and force off replace one target. Surrounding spaces are trimmed. |
+| FLAG-04 | Preview a user against a flag | P1 | PASSED | 0 | 0 | 0 | Preview returns the decision reason. A missing flag is 404. |
+| FLAG-05 | Flag key shape | P1 | PASSED | 0 | 0 | 0 | Uppercase, a leading digit, and a 65-character key are rejected. |
+| AUDIT-01 | Audit row on a flag change | P0 | PASSED | 0 | 0 | 0 | Create, update, and target changes each write an audit row. |
+| AUDIT-02 | List and filter the audit log | P1 | PASSED | 0 | 0 | 0 | The flag filter is exact. Logged-out requests are 401. |
+| AUDIT-03 | Readable audit summaries | P2 | PASSED | 0 | 0 | 0 | Rows summarize the toggle, the percent, and the target change. |
+| TEAM-01 | Admin adds a teammate | P0 | PASSED | 0 | 0 | 0 | An admin can add a member. The response has no password hash. |
+| TEAM-02 | Admin removes a member | P0 | PASSED | 0 | 0 | 0 | Deleting a member returns 200 and ends that session. |
+| TEAM-03 | The last admin cannot be deleted | P0 | PASSED | 0 | 0 | 0 | An admin cannot remove their own account, so the last admin remains. |
+| UI-01 | Flags list and empty state | P0 | PASSED | 1 | 1 | 0 | Logged-out HTML included flag records. The pages now require a session before loading them. |
+| UI-02 | Flag detail editor | P0 | PASSED | 0 | 0 | 0 | Toggle, percent, target, preview, and delete worked in Chrome. No overflow at the checked widths. |
+| UI-03 | New flag form | P0 | PASSED | 0 | 0 | 0 | The form creates a flag and opens it. Labels are present. |
+| UI-04 | Setup and login screens | P0 | PASSED | 0 | 0 | 0 | Setup, a wrong password, and the closed setup screen worked in Chrome. |
+| UI-05 | API keys and team settings | P0 | PASSED | 0 | 0 | 1 | The one-time secret disappears on refresh. Team fields now have visible labels. |
+| UI-06 | Audit page | P1 | PASSED | 0 | 0 | 1 | Sentences render, the empty filter is clear, and logged-out HTML has no rows. |
+| UI-07 | Public home page | P2 | PASSED | 0 | 0 | 0 | Home renders the heading, sign-in link, and deploy anchor. No live secret. |
+| UI-08 | Signed-in shell | P1 | PASSED | 0 | 0 | 1 | The current page is marked. Sign out returns to the public sign-in screen. |
+| UI-09 | Not found and error pages | P1 | PASSED | 0 | 0 | 1 | Not-found and the safe error page render. The probe page was deleted. |
+| UI-10 | Crawl policy | P2 | PASSED | 0 | 0 | 0 | robots.txt disallows /. The home page is noindex, nofollow. |
+| SEO-01 | Document title, description, and icon | P1 | PASSED | 0 | 0 | 0 | Titles use the Pennant template. /favicon.svg returns 200. |
+| SDK-01 | Server SDK package | P0 | PASSED | 0 | 0 | 0 | The SDK package builds and publishes only dist. |
+| SDK-02 | isEnabled calls evaluate | P0 | PASSED | 0 | 0 | 0 | The SDK test calls evaluate with the bearer token. |
+| SDK-03 | Cache and default value | P1 | PASSED | 0 | 0 | 0 | Cache reuse and defaultValue-on-failure passed in the SDK tests. |
+| SEC-01 | Security headers | P1 | PASSED | 0 | 0 | 0 | The documented security headers are on the home response. |
+| SEC-02 | Health check | P0 | PASSED | 0 | 0 | 0 | Health is 200 {ok:true} with a private no-store cache header. |
+| SEC-03 | Concurrent evaluate load | P2 | PASSED | 0 | 0 | 0 | 200 concurrent evaluates completed with no server error. |
+| HTTP-01 | Session required on dashboard APIs | P0 | PASSED | 0 | 0 | 0 | Dashboard routes require a session. An API key is not a session. |
+| DEVOPS-01 | GitHub Actions CI | P0 | PASSED | 0 | 0 | 0 | The CI steps passed locally. The workflow was not pushed. |
+| DEVOPS-02 | Vercel and Neon deploy shape | P0 | PASSED | 0 | 0 | 0 | The Vercel build command succeeded locally. No deploy was made. |
+| DEVOPS-03 | SDK publish workflow | P2 | PASSED | 0 | 0 | 0 | The publish workflow checks the tag against 0.1.1. No tag was pushed. |
+| TEST-01 | Node test suite | P0 | PASSED | 0 | 0 | 0 | The Node test suite passed, 39 tests. |
+| TEST-02 | Playwright operator journeys | P0 | PASSED | 0 | 0 | 0 | Four Playwright journeys passed against the local production server. |
+| TEST-03 | Health-down script | P2 | PASSED | 0 | 0 | 0 | A refused database returns 503 and {ok:false} with no stack. |
+
+## Gaps
+
+| ID | Gap | Decision | Reason |
+| --- | --- | --- | --- |
+| GAP-01 | Audience segments | DEFER | The README lists segments as won't-build. Per-user force on and off is the targeting that exists. |
+| GAP-02 | Flag-change webhooks | DEFER | The README says the audit log is the change record. |
+| GAP-03 | A/B experiments and analytics | DEFER | VISION.md limits the product to flags and rollout. |
+| GAP-04 | Several environments in one deployment | DEFER | The README says a second deploy is the staging environment. |
+| GAP-05 | OAuth or SSO | DEFER | Sign-in is email and password only. |
+| GAP-06 | Email invites and password reset | DEFER | The README says Pennant does not send email. An admin sets the teammate password. |
+| GAP-07 | Browser SDK | DEFER | The SDK README says the API key must not be put in browser code. |
+| GAP-08 | Billing and multiple organizations | DEFER | One deployment is a single team, not a billed SaaS. |
+| GAP-09 | Theme toggle | DEFER | globals.css is one light paper theme. There is no dark theme in the source. |
+
+Deferred gaps are not feature rows. There is no BUILD gap. The not-found page and the error page already exist.
+
+## Per-Feature Sections
+
+### DATA-01 Postgres schema and migration
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/prisma/contract.prisma, migrations/app/20261028T2019_init, src/prisma/db.ts
+- **Expected behavior:** The schema has users, sessions, API keys, flags, per-user targets, and audit events. Flag rollout is checked in the database to the range 0 through 100. A target is unique per flag and external id. Deleting a user cascades sessions and keys. Deleting a flag cascades its targets. The build command runs prisma db migrate before next build.
+- **Acceptance:**
+- [x] A fresh database applies the init migration and the six models exist.
+- [x] A rollout outside 0 through 100 is rejected by the check constraint.
+- [x] Running the migration again does not drop existing flags.
+- **Test cases:**
+- Apply the migration to an empty Postgres 16 database and list the tables.
+- Insert a flag with rollout 101 and confirm the database rejects it.
+- Run the migration a second time and confirm the existing row is still there.
+- **Dependencies:** Postgres 15 or newer, DATABASE_URL and DIRECT_URL.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Applied `20261028T2019_init` to an empty Postgres 16. Tables: ApiKey, AuditEvent, Flag, FlagTarget, Session, User. Insert of rollout 101 failed with flag_rollout_range_a4fb22dd. A second `prisma db migrate` reported already up to date and the flag at 10% was still there. Probe row deleted afterward.
+
+### DATA-02 Pooled runtime URL and direct migration URL
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** README.md, .env.example, vercel.json, prisma.config.ts
+- **Expected behavior:** Runtime queries use DATABASE_URL. Migrations use DIRECT_URL. On Neon those are the pooled host and the direct host. A local database may use the same value for both. The Vercel build command is prisma db migrate && next build.
+- **Acceptance:**
+- [x] The example env documents both variables and which host is pooled.
+- [x] vercel.json build command migrates before the Next build.
+- [x] A missing AUTH_SECRET of at least 16 characters fails closed in authSecret().
+- **Test cases:**
+- Read prisma.config.ts and confirm the two URLs are wired to the documented roles.
+- Start is not required. Do not connect to a production database.
+- **Dependencies:** DATA-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** prisma.config.ts connects migrations with DIRECT_URL ?? DATABASE_URL. src/prisma/db.ts uses DATABASE_URL. .env.example says the pooled host contains -pooler and the direct host does not. vercel.json buildCommand is `prisma db migrate && next build`. authSecret() threw for an unset secret and for `short`, and returned a 16-character secret.
+
+### EVAL-01 Rollout decision
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/lib/evaluate.ts, src/lib/evaluate.test.ts
+- **Expected behavior:** An unknown flag is off with reason missing. A matching target wins, even when the flag is off or the percent is 100. Otherwise a disabled flag is off. At 100 percent everyone else is on, including a check with no user id. Below 100 percent a missing user id is off, and a user is on only when the SHA-256 bucket of flagKey:userId is strictly below the percent. The bucket is stable.
+- **Acceptance:**
+- [x] The same flag and user always get the same bucket.
+- [x] A force-on target is on while the flag is disabled.
+- [x] A force-off target is off at 100 percent.
+- [x] Whitespace around a user id is trimmed before the lookup.
+- **Test cases:**
+- Run the evaluate unit tests.
+- Check a user id of spaces, a very long id, and a non-English id through the pure function.
+- Confirm 0 percent is off except for a force-on target.
+- **Dependencies:** None. This function does not touch the database.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** `tsx --test src/lib/evaluate.test.ts` passed 9 tests. Extra calls: whitespace-only ids are rollout_no_user; a 5000-character id, ユーザー-東京, an emoji id, a SQL fragment, markup, and a path-like id each returned the same result twice. `  ユーザー-東京  ` matched a force-on target while the flag was disabled and the percent was 0.
+
+### EVAL-02 GET /api/v1/evaluate
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/v1/evaluate/route.ts, src/lib/flags.ts, src/lib/actors.ts
+- **Expected behavior:** The route requires a bearer API key. The flag query is required and limited to 200 characters. userId is optional and limited to 200 characters. The JSON body is only enabled true or false. A missing flag is a successful response of enabled false, not a 404.
+- **Acceptance:**
+- [x] A valid key and an existing flag return enabled.
+- [x] A missing flag query is 400.
+- [x] A missing, revoked, or session token is 401.
+- [x] A flag longer than 200 characters is 400.
+- **Test cases:**
+- Call with no token, a short token, a session cookie, and a revoked key.
+- Call with an empty flag, a flag of spaces, and a 201-character flag.
+- Call a flag that does not exist and confirm enabled is false.
+- Send the same user twice and confirm the boolean matches.
+- **Dependencies:** DATA-01, APIKEY-01, EVAL-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Live checks on 127.0.0.1:3012. No token, a short token, and a session cookie used as a bearer are 401. An empty flag and a flag of spaces are 400. A 201-character flag and a 201-character user id are 400. An unknown flag is {enabled:false}. The same user returns the same boolean, and the body has only that field.
+
+### EVAL-03 GET /api/v1/flags
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** src/app/api/v1/flags/route.ts
+- **Expected behavior:** A valid API key can list flag definitions for a caller that wants to cache them. The SDK does not evaluate locally. The list does not include password hashes or API key secrets.
+- **Acceptance:**
+- [x] A valid key receives the flag keys and rollout fields.
+- [x] No token is rejected.
+- [x] The payload contains no keyHash and no passwordHash.
+- **Test cases:**
+- List flags after creating one, then again with a revoked key.
+- Confirm the response has no secret fields.
+- **Dependencies:** EVAL-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** A valid key listed new-checkout with rollout fields. The payload had no passwordHash, keyHash, or the pn_ secret. No token is 401. After revoke, the same key is 401.
+
+### EVAL-04 Evaluate responses are not cached by a CDN
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/lib/security.test.ts, src/lib/http.ts
+- **Expected behavior:** Flag checks are private and uncached. The response tells a shared cache not to store them, so a toggle is visible on the next check.
+- **Acceptance:**
+- [x] The evaluate response includes Cache-Control private, no-store.
+- [x] A second check after a toggle sees the new value when the SDK cache is off.
+- **Test cases:**
+- Read the header on a live evaluate response during step 2.
+- The existing security test covers the header.
+- **Dependencies:** EVAL-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The evaluate response Cache-Control was private, no-store. With cache off, a disabled flag was enabled false, the toggle to on was visible on the next check, percent 0 was false, and a force-on target was true.
+
+### AUTH-01 First admin setup
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/auth/setup/route.ts, src/app/setup/page.tsx, src/lib/auth.ts
+- **Expected behavior:** POST /api/auth/setup creates the first admin and sets a session cookie. Email is trimmed and lowercased. Password must be 8 to 200 characters. Name must be 1 to 80 characters. After an account exists, setup no longer creates another one.
+- **Acceptance:**
+- [x] The first valid body returns 201 and a session cookie.
+- [x] A second setup does not create another admin.
+- [x] A short password, a bad email, and invalid JSON are 400.
+- [x] The setup screen is not the way to add later users.
+- **Test cases:**
+- Post a valid admin, then post again.
+- Post an empty body, a password of 7 characters, an emoji-only name, and a non-object JSON body.
+- Two parallel setup requests must not both succeed.
+- **Dependencies:** DATA-01, AUTH_SECRET of at least 16 characters.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 1
+- **Bugs Fixed:** 1
+- **UI Issues Fixed:** 0
+- **Files Changed:** src/lib/auth.ts
+- **Notes:** Setup returned 201, stored the email in lowercase, trimmed the name, and set an HttpOnly cookie. A second setup is 409. Two simultaneous setups both returned 201 before the fix. setupAccount now takes pg_advisory_xact_lock(4815162343) before the count. The retry was 201 and 409 with one admin row. The API suite then passed 13/13, including the simultaneous-setup test.
+
+### AUTH-02 Email and password session
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/auth/login/route.ts, src/app/api/auth/me/route.ts, src/lib/cookies.ts
+- **Expected behavior:** Login checks the password with scrypt and sets an httpOnly session cookie. GET /api/auth/me returns the signed-in user. A wrong password and an unknown email fail without creating a session.
+- **Acceptance:**
+- [x] A correct password sets the cookie and /api/auth/me returns that user.
+- [x] A wrong password does not set a session.
+- [x] The cookie is httpOnly.
+- [x] An expired session is treated as logged out.
+- **Test cases:**
+- Log in, call /api/auth/me, and open /flags.
+- Log in with the wrong password, an empty password, and a non-English email that was not registered.
+- Confirm the cookie flags from the Set-Cookie header.
+- **Dependencies:** AUTH-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET /api/auth/me is 200 with the session and 401 without it. Login with the right password is 200. A non-string email, a 5-character password, and a whitespace password are 400. An expired session is 401 on the next me call. A member can sign in.
+
+### AUTH-03 Sign out
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/auth/logout/route.ts
+- **Expected behavior:** POST /api/auth/logout clears the session. After that, dashboard routes and /api/auth/me no longer accept the old cookie.
+- **Acceptance:**
+- [x] Sign out redirects or returns success and the cookie is cleared.
+- [x] The old cookie cannot open /flags or /api/flags.
+- **Test cases:**
+- Sign in, sign out, then request /flags and /api/auth/me with the old cookie.
+- Submit logout twice.
+- **Dependencies:** AUTH-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** POST /api/auth/logout returned 200 and the same cookie then got 401 from /api/auth/me.
+
+### AUTH-04 Admin and member roles
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/lib/actors.ts, src/app/api/api-keys/route.ts, src/app/api/users/route.ts
+- **Expected behavior:** A member can use flags. Creating and listing API keys, creating users, and deleting users require an admin. A member receives a forbidden response on those routes.
+- **Acceptance:**
+- [x] A member can open flags.
+- [x] A member cannot create an API key or a teammate.
+- [x] An admin can do both.
+- **Test cases:**
+- Sign in as a member and request the key and team routes.
+- Repeat as the admin.
+- Call those routes with no session.
+- **Dependencies:** TEAM-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** A member creating a flag got 201. The same member got 403 on creating a key, listing keys, adding a user, and deleting a user. An admin created keys and users.
+
+### AUTH-05 Login failure limit
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/lib/rate-limit.ts, src/lib/rate-limit.test.ts
+- **Expected behavior:** Eight failed sign-ins for the same email and client address are blocked for 15 minutes. The address comes from the first X-Forwarded-For value, trimmed to 80 characters, or unknown. The limit is in process memory.
+- **Acceptance:**
+- [x] The eighth failure blocks the next attempt inside the window.
+- [x] A success is not what this counter records. Failures are.
+- [x] A different email is counted separately.
+- **Test cases:**
+- Run the rate-limit unit test.
+- Send eight bad passwords and confirm the next attempt is blocked.
+- Confirm a different address is not blocked by that bucket.
+- **Dependencies:** AUTH-02. The counter resets when the process restarts.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Nine failed sign-ins for locked@example.com from 198.51.100.20 ended in 429 Too many attempts. The body did not contain the email. The same email from a different address was still 401.
+
+### AUTH-06 Login error does not reveal which part failed
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** src/app/api/auth/login/route.ts, src/lib/api.test.ts
+- **Expected behavior:** An unknown email and a wrong password return the same error. The response does not say which of the two was wrong.
+- **Acceptance:**
+- [x] Both cases return the same status and the same message.
+- [x] The body does not contain the stored password hash.
+- **Test cases:**
+- Compare the two responses.
+- The existing API test covers the timing and the message.
+- **Dependencies:** AUTH-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** An unknown email and a wrong password both returned 401 with {error: Invalid email or password}. Neither body named the account.
+
+### APIKEY-01 Create and list API keys
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/lib/secrets.ts, src/lib/api-keys.ts, src/app/api/api-keys/route.ts, src/app/(app)/settings/keys/page.tsx
+- **Expected behavior:** An admin creates a key named by the operator. The secret is pn_ plus a random token and is returned once. Later lists show the prefix and name, not the secret. The database stores a hash that includes AUTH_SECRET.
+- **Acceptance:**
+- [x] Create returns the pn_ secret once.
+- [x] A following list does not contain that secret.
+- [x] A member and a logged-out caller cannot create a key.
+- [x] Rotating AUTH_SECRET invalidates existing keys, as the README says.
+- **Test cases:**
+- Create a key, copy the secret, reload the list, and search the list for the secret.
+- Create with an empty name and a very long name.
+- Create as a member.
+- **Dependencies:** AUTH-04.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Creating a key returned 201 and a pn_ secret. GET /api/api-keys listed the key and did not include the secret, keyHash, or a password hash.
+
+### APIKEY-02 Revoke an API key
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/api-keys/[id]/route.ts
+- **Expected behavior:** An admin can revoke a key. After that, GET /api/v1/evaluate with the secret is unauthorized. Revoking an unknown id does not succeed as if it existed.
+- **Acceptance:**
+- [x] Evaluate works before revoke and returns 401 after.
+- [x] A member cannot revoke a key.
+- [x] Revoking the same key twice is a safe error.
+- **Test cases:**
+- Create a key, evaluate, revoke, evaluate again.
+- Revoke with a member session and with no session.
+- **Dependencies:** APIKEY-01, EVAL-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** DELETE of the key returned 200. The same secret then got 401 from evaluate and from the public flag list.
+
+### FLAG-01 Create, read, and delete a flag
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/flags/route.ts, src/app/api/flags/[key]/route.ts, src/lib/flags.ts
+- **Expected behavior:** A signed-in user can create a flag with a key, name, and description. The key matches a lowercase slug of at most 64 characters. Description is at most 500 characters. A duplicate key is rejected. Delete removes the flag and its targets.
+- **Acceptance:**
+- [x] Create, fetch, and delete a flag.
+- [x] A duplicate key is rejected.
+- [x] A logged-out caller cannot create a flag.
+- [x] A description of 501 characters is rejected.
+- **Test cases:**
+- Create new-checkout, fetch it, and delete it.
+- Create with an empty key, New-Checkout, a key with a slash, and a 500-character description.
+- Create the same key twice.
+- **Dependencies:** AUTH-02, FLAG-05.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Create, read, and a duplicate key behaved as specified: 201, 200, and 409. The name was trimmed. A SQL-shaped name was stored as text. Invalid JSON is covered by the API suite.
+
+### FLAG-02 Toggle and rollout percent
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/flags/[key]/route.ts, src/components/flag-editor.tsx, src/lib/validate.ts
+- **Expected behavior:** PATCH sets enabled to a boolean and rolloutPercent to an integer from 0 through 100. Other types are rejected. The dashboard editor writes those fields.
+- **Acceptance:**
+- [x] 0, 100, and a middle percent are stored.
+- [x] 101, -1, 1.5, and a string percent are rejected.
+- [x] enabled must be a boolean.
+- **Test cases:**
+- Patch a flag through the API and through the editor.
+- Submit the form twice.
+- Patch a flag that does not exist.
+- **Dependencies:** FLAG-01, EVAL-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Turning a flag on returned enabled true. Percent 40 was stored. 101, 1.5, and the string 40 were 400. A live evaluate followed the toggle and then percent 0.
+
+### FLAG-03 Per-user force on and force off
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/flags/[key]/targets/route.ts
+- **Expected behavior:** POST sets a target for an external user id of 1 to 200 characters. allowed true forces on. allowed false forces off. The pair is unique. DELETE removes that target. A target wins over the percent.
+- **Acceptance:**
+- [x] Force on stays on while the flag is off.
+- [x] Force off stays off at 100 percent.
+- [x] Deleting the target returns the user to the percent rule.
+- [x] An empty user id is rejected.
+- **Test cases:**
+- Create both kinds of target and evaluate each user.
+- Post the same user twice.
+- Delete a target that is not there.
+- Use a 201-character id and an id with emoji.
+- **Dependencies:** FLAG-01, EVAL-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** A user id with surrounding spaces was stored trimmed and forced on. Setting the same id to denied replaced that one target. Evaluate then returned enabled false for that user and, at percent 0, enabled true after force on.
+
+### FLAG-04 Preview a user against a flag
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** src/app/api/flags/[key]/preview/route.ts
+- **Expected behavior:** A signed-in user can preview whether one external id would be on for a flag, without minting an API key. The preview uses the same decision as evaluate.
+- **Acceptance:**
+- [x] Preview matches GET /api/v1/evaluate for the same flag and user.
+- [x] A logged-out caller cannot preview.
+- [x] An unknown flag is a not-found or an off result, and the response does not throw a stack.
+- **Test cases:**
+- Preview a forced user, a rolled-out user, and a user id of spaces.
+- Call preview with no session.
+- **Dependencies:** FLAG-03, EVAL-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Preview of the denied user was {enabled:false, reason:target_deny}. Another user was rollout_out. A missing flag was 404 Flag not found.
+
+### FLAG-05 Flag key shape
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** src/lib/validate.ts, src/lib/validate.test.ts
+- **Expected behavior:** A flag key must start with a letter and then use only lowercase letters, numbers, and hyphens, with a total length of 1 to 64. Uppercase, spaces, and slashes are rejected.
+- **Acceptance:**
+- [x] new-checkout is accepted.
+- [x] New, a space, a slash, and a 65-character key are rejected.
+- **Test cases:**
+- Run the validate unit tests.
+- Submit the new-flag form with each rejected shape.
+- **Dependencies:** FLAG-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** New_Checkout, a leading digit, and a 65-character key were 400 with the key-shape error. new-checkout was accepted.
+
+### AUDIT-01 Audit row on a flag change
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/lib/audit.ts, src/prisma/contract.prisma
+- **Expected behavior:** Creating, updating, deleting a flag, and changing a target write an audit event with the actor email, action, flag key, and before and after JSON. The event does not store an API key secret or a password hash.
+- **Acceptance:**
+- [x] A flag update appears in the audit list.
+- [x] The actor email matches the signed-in user.
+- [x] The stored JSON has no secret.
+- **Test cases:**
+- Change a flag and read the newest audit row.
+- Delete a target and confirm that change is recorded too.
+- **Dependencies:** FLAG-01, FLAG-03.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The flag's audit list included created, updated, and targeting_changed, with the admin email on the rows.
+
+### AUDIT-02 List and filter the audit log
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** src/app/api/audit/route.ts, src/app/(app)/audit/page.tsx
+- **Expected behavior:** A signed-in user can list audit events. Filters narrow by flag key. A logged-out caller cannot read the log.
+- **Acceptance:**
+- [x] The list returns the events from AUDIT-01.
+- [x] A filter for one flag hides the others.
+- [x] No session is rejected.
+- **Test cases:**
+- List with no filter, with a known key, and with a key that has no events.
+- Request the route with no cookie.
+- **Dependencies:** AUDIT-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Filtering by new-checkout returned only that flag. The unfiltered list also contained drop-table. A logged-out request was 401.
+
+### AUDIT-03 Readable audit summaries
+
+- **Status:** PASSED
+- **Priority:** P2
+- **Files:** src/lib/audit-summary.ts, src/lib/audit-summary.test.ts
+- **Expected behavior:** The dashboard shows a sentence for each audit action instead of only the raw JSON. The summary does not include secrets.
+- **Acceptance:**
+- [x] A known action renders a sentence that names the flag.
+- [x] An unknown action does not throw.
+- **Test cases:**
+- Run the audit-summary unit tests.
+- Open the audit page and read one line.
+- **Dependencies:** AUDIT-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Summaries were Flag created, Turned on, Rollout 100% → 40%, user-ada forced on, and user-ada now forced off. The API suite also expects Flag deleted.
+
+### TEAM-01 Admin adds a teammate
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/users/route.ts, src/app/(app)/settings/team/page.tsx
+- **Expected behavior:** An admin creates a user with email, name, password, and role admin or member. The default role is member. Pennant does not send email. The password is stored as scrypt, not plaintext.
+- **Acceptance:**
+- [x] An admin can add a member who can then sign in.
+- [x] A member cannot add a user.
+- [x] A duplicate email is rejected.
+- [x] The response and the database row do not contain the plaintext password.
+- **Test cases:**
+- Create a member, sign in as that member, and sign back in as the admin.
+- Create with a short password and an invalid email.
+- Create the same email twice.
+- **Dependencies:** AUTH-04.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** An admin added grace@example.com as a member. The email was lowercased and the response had no password hash. A second admin was added the same way.
+
+### TEAM-02 Admin removes a member
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/users/[id]/route.ts
+- **Expected behavior:** An admin can delete a member. That user's sessions are removed with the user, so the old cookie stops working. A member cannot delete a user.
+- **Acceptance:**
+- [x] After deletion, the member's cookie cannot open the dashboard.
+- [x] A member cannot call the delete route.
+- **Test cases:**
+- Delete a member while that member has a session, then reuse the cookie.
+- Delete an unknown id.
+- **Dependencies:** TEAM-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Deleting the member returned 200 and that member's session then got 401. Deleting a second admin also returned 200. The API suite covers two admins deleting each other at once and leaves one admin.
+
+### TEAM-03 The last admin cannot be deleted
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/users/[id]/route.ts, src/lib/api.test.ts
+- **Expected behavior:** Deleting the only remaining admin is rejected, including when two deletes race. The deployment is never left with zero admins.
+- **Acceptance:**
+- [x] A sole admin cannot be deleted.
+- [x] Two parallel deletes of the last two admins leave one admin.
+- **Test cases:**
+- Attempt to delete the only admin.
+- Run the concurrent last-admin test in the API suite.
+- **Dependencies:** TEAM-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The only admin deleting their own account got 400 You cannot remove yourself, before and after the other admin was removed. The API suite's simultaneous delete leaves exactly one admin.
+
+### UI-01 Flags list and empty state
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/(app)/flags/page.tsx
+- **Expected behavior:** A signed-in user sees the flags or a clear empty state. A logged-out visit does not show the list.
+- **Acceptance:**
+- [x] An empty account shows the empty state.
+- [x] After one flag exists, the list shows its key and name.
+- [x] The list has no horizontal overflow at 360, 768, 1024, and 1440.
+- **Test cases:**
+- Open /flags signed out, then signed in with no flags, then with one flag.
+- Check the console for errors.
+- **UI checks:**
+- Empty, one flag, and many flags.
+- Light paper theme at the four widths.
+- Keyboard to the new-flag link.
+- Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
+- **Dependencies:** FLAG-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 1
+- **Bugs Fixed:** 1
+- **UI Issues Fixed:** 0
+- **Files Changed:** src/app/(app)/flags/page.tsx, src/app/(app)/audit/page.tsx, src/app/(app)/flags/[key]/page.tsx, src/lib/security.test.ts
+- **Notes:** Chrome on the local server showed the empty state, then the created flag with its percent. A logged-out GET /flags, /audit, and /flags/new-checkout embedded the flag name, description, and actor email in the HTML. Those pages now read the session and redirect before loading private data. A regression test locks that order. After delete, the list returned to No flags yet.
+
+### UI-02 Flag detail editor
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/(app)/flags/[key]/page.tsx, src/components/flag-editor.tsx
+- **Expected behavior:** The detail page toggles the flag, sets the percent, and adds or removes a target. The control shows the saved value after refresh.
+- **Acceptance:**
+- [x] A toggle survives refresh.
+- [x] A percent outside 0 through 100 is not saved.
+- [x] The unknown-flag URL uses the not-found page.
+- **Test cases:**
+- Toggle, set 0 and 100, add a target, refresh, and go back.
+- Open a missing key.
+- Double-submit the save.
+- **UI checks:**
+- Disabled, loading, and saved states.
+- Focus on the toggle and the percent field.
+- Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
+- **Dependencies:** FLAG-02, FLAG-03.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** In Chrome the editor turned the flag on, saved 40 percent, forced user-ada on, and previewed Enabled with the sentence This user is forced on. Recent changes showed Turned on, the percent change, and the target sentence. Delete asked for confirmation and returned to the empty list. Widths 360, 768, 1024, and 1440 did not overflow.
+
+### UI-03 New flag form
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/(app)/flags/new/page.tsx
+- **Expected behavior:** The form creates a flag and opens it. Invalid keys stay on the form with an error and do not create a row.
+- **Acceptance:**
+- [x] new-checkout is created.
+- [x] An uppercase key shows the validation error.
+- [x] Submitting twice does not create two flags.
+- **Test cases:**
+- Submit a valid key, an empty key, and a key with a space.
+- Use the keyboard only.
+- **UI checks:**
+- Error under the field.
+- The submit button is disabled while the request is in flight if the form does that.
+- Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
+- **Dependencies:** FLAG-05.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The new-flag form has labels for key, name, and description. Creating new-checkout with a Japanese description opened the flag page. The browser pattern rejected a bad key shape before submit.
+
+### UI-04 Setup and login screens
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/setup/page.tsx, src/app/login/page.tsx, src/components/auth-forms.tsx
+- **Expected behavior:** Before any user, /setup creates the admin. After that, operators use /login. Both forms show a safe error and do not echo the password.
+- **Acceptance:**
+- [x] Setup closes once an account exists.
+- [x] A wrong password stays on the login page.
+- [x] The password field is type password.
+- **Test cases:**
+- Create the admin, return to /setup, then fail a login and succeed.
+- Check 360 and 1440 widths.
+- **UI checks:**
+- Labels on both fields.
+- Error text is visible and not only a color.
+- Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
+- **Dependencies:** AUTH-01, AUTH-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Setup created Ada and landed on Flags. The password input is type password. A wrong password stayed on Sign in and showed Invalid email or password, with the password masked. After an account existed, /setup settled on /login. Setup at 360 pixels did not overflow.
+
+### UI-05 API keys and team settings
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/(app)/settings/keys/page.tsx, src/app/(app)/settings/team/page.tsx, src/components/settings-forms.tsx
+- **Expected behavior:** An admin sees both settings pages. A member does not get the create actions. A newly created key secret is visible once on the page.
+- **Acceptance:**
+- [x] The secret is shown once and is not in the list after refresh.
+- [x] A member is blocked from the admin actions.
+- [x] The secret is not placed in the address bar.
+- **Test cases:**
+- Create a key, refresh, and confirm the secret is gone.
+- Open both pages as a member.
+- **UI checks:**
+- The one-time secret is selectable.
+- The revoke control has an accessible name.
+- Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
+- **Dependencies:** APIKEY-01, TEAM-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 1
+- **Files Changed:** src/components/settings-forms.tsx, e2e/journeys.spec.ts
+- **Notes:** An admin created a key, saw the secret once, and after refresh saw only the prefix. The secret was not in the address. A member saw Only admins can manage API keys and no secret. The team form previously used placeholders alone. It now has visible Name, Email, Password, and Role labels. The member journey was updated to those fields and passed.
+
+### UI-06 Audit page
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** src/app/(app)/audit/page.tsx
+- **Expected behavior:** The page lists the human-readable lines for flag changes. An empty log has an empty state. A logged-out user cannot see it.
+- **Acceptance:**
+- [x] A flag edit appears as a sentence.
+- [x] The page does not show a password or an API secret.
+- **Test cases:**
+- Change a flag, open /audit, and filter if a filter is on the page.
+- Open /audit signed out.
+- **UI checks:**
+- A long flag key does not overflow the row.
+- Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
+- **Dependencies:** AUDIT-03.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 1
+- **Files Changed:** included with UI-01
+- **Notes:** The audit page listed the human sentences for the flag edits and did not show a password or API secret. Filtering to a missing key showed No changes recorded. The filter has a Flag key label. A logged-out request no longer includes the rows.
+
+### UI-07 Public home page
+
+- **Status:** PASSED
+- **Priority:** P2
+- **Files:** src/app/page.tsx
+- **Expected behavior:** The home page explains the product, links to sign in, and links to the Vercel deploy button. The code sample uses the SDK and does not contain a real key.
+- **Acceptance:**
+- [x] The heading and the sign-in link render.
+- [x] The sample has no live secret.
+- [x] The page is readable at 360 pixels.
+- **Test cases:**
+- Open / signed out.
+- Follow Sign in and confirm it lands on /login.
+- **UI checks:**
+- Light paper theme.
+- The deploy link is a real anchor.
+- Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
+- **Dependencies:** None.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The home page heading and Sign in link rendered. The sample uses PENNANT_API_KEY from the environment, not a live secret. Deploy to Vercel is a real anchor. At 360 pixels the page did not overflow. The paper background is rgb(244, 240, 230).
+
+### UI-08 Signed-in shell
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** src/components/shell.tsx, src/app/(app)/layout.tsx
+- **Expected behavior:** The signed-in shell links to flags, audit, and the settings an admin can use. Sign out is available. A logged-out request does not render the shell's private data.
+- **Acceptance:**
+- [x] Each nav link opens the right page.
+- [x] Sign out returns to the public side.
+- [x] The nav fits at 360 pixels.
+- **Test cases:**
+- Click every nav item and sign out.
+- Reload a private page and use the back button.
+- **UI checks:**
+- Current page is indicated.
+- Focus stays visible on the links.
+- Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
+- **Dependencies:** AUTH-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 1
+- **Files Changed:** src/components/shell.tsx, src/components/shell-nav.tsx
+- **Notes:** Flags, Audit, API keys, and Team each opened the right page. Sign out returned to Sign in. The nav had no current-page indication. The current link now sets aria-current=page and uses the accent color, and the links keep a visible focus outline. At 360 pixels the nav did not overflow. A logged-out request does not render the private shell.
+
+### UI-09 Not found and error pages
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** src/app/not-found.tsx, src/app/error.tsx
+- **Expected behavior:** An unknown page says Page not found and links back to flags. A render error says Something went wrong, offers Try again, and does not print the exception or a secret.
+- **Acceptance:**
+- [x] A missing URL shows Page not found.
+- [x] A thrown error does not include the exception text.
+- [x] Try again calls reset.
+- **Test cases:**
+- Open a missing URL.
+- Throw from a temporary page, confirm the safe copy, and delete that page before the commit.
+- **UI checks:**
+- Both pages use the same paper type as the rest of the app.
+- Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
+- **Dependencies:** None.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 1
+- **Files Changed:** src/app/not-found.tsx, src/app/error.tsx
+- **Notes:** A missing URL showed Page not found and Back to flags. Its title was only Pennant, so the page now uses the template and the title is Page not found · Pennant. A temporary throwing page showed Something went wrong and Try again, which calls reset, and did not include the exception text. That page was deleted and is not in git. The error title is Error · Pennant.
+
+### UI-10 Crawl policy
+
+- **Status:** PASSED
+- **Priority:** P2
+- **Files:** src/app/robots.ts, src/app/layout.tsx
+- **Expected behavior:** robots.txt disallows every path. The document metadata also sets robots to noindex, nofollow. The private dashboard is not an indexed site.
+- **Acceptance:**
+- [x] GET /robots.txt disallows /.
+- [x] The home document carries noindex.
+- **Test cases:**
+- Fetch /robots.txt.
+- Read the robots meta on /.
+- **Dependencies:** SEO-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET /robots.txt was 200 and contained User-Agent * and Disallow /. The home document robots meta is noindex, nofollow.
+
+### SEO-01 Document title, description, and icon
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** src/app/layout.tsx, public/favicon.svg, public/logo.svg
+- **Expected behavior:** The default title is Pennant and the template is the page name plus Pennant. The description is the self-hosted flag sentence. The icon is /favicon.svg.
+- **Acceptance:**
+- [x] The home title is Pennant.
+- [x] A private page uses the template.
+- [x] The favicon request succeeds.
+- **Test cases:**
+- Read the title on /, /login, and /flags.
+- Request /favicon.svg.
+- **Dependencies:** None.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The home title is Pennant. /login is Sign in · Pennant, /setup is Setup · Pennant, and /flags is Flags · Pennant. The description meta matches the layout. GET /favicon.svg returned 200 image/svg+xml.
+
+### SDK-01 Server SDK package
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** packages/sdk/package.json, packages/sdk/tsconfig.json, .github/workflows/ci.yml
+- **Expected behavior:** The workspace package @rejisterjack/pennant is version 0.1.1, ESM, and built with tsc. CI builds it with npm run build -w @rejisterjack/pennant. It is server-side only.
+- **Acceptance:**
+- [x] The package typechecks and builds.
+- [x] The published files are dist only.
+- **Test cases:**
+- Run the workspace build.
+- Do not publish a tag in step 1.
+- **Dependencies:** None.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The workspace package is @rejisterjack/pennant 0.1.1, type module, files limited to dist, engines node >= 20. npm run build -w @rejisterjack/pennant completed and dist exists. The package typecheck is included in npm run typecheck, which passed.
+
+### SDK-02 isEnabled calls evaluate
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** packages/sdk/src/index.ts, packages/sdk/src/index.test.ts
+- **Expected behavior:** isEnabled sends GET /api/v1/evaluate with the bearer key and the flag query. A user id is added when present. An empty flag key throws. A missing flag from the API returns false. A non-OK response throws unless defaultValue is set.
+- **Acceptance:**
+- [x] A true response returns true.
+- [x] A missing flag response of enabled false returns false.
+- [x] A 401 throws.
+- [x] The Authorization header is Bearer plus the key.
+- **Test cases:**
+- Run the SDK unit tests.
+- Point a client at the local app during step 2 and check one flag.
+- **Dependencies:** EVAL-02, SDK-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** packages/sdk/src/index.test.ts passed. isEnabled calls evaluate with the bearer token and parses enabled. An empty flag is rejected before the network. The user id is trimmed.
+
+### SDK-03 Cache and default value
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** packages/sdk/src/index.ts
+- **Expected behavior:** cacheTtlMs defaults to 0, so every check hits the API. A positive value reuses the boolean until it expires, with at most 1000 entries. defaultValue is returned only when the request fails. A missing flag is still false.
+- **Acceptance:**
+- [x] The default client does not serve a stale toggle.
+- [x] A network failure returns defaultValue when one was passed.
+- [x] A network failure throws when defaultValue was not passed.
+- **Test cases:**
+- Run the SDK tests that cover the cache and the failure path.
+- Call twice inside the TTL and confirm the second does not need a new response.
+- **Dependencies:** SDK-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The SDK tests passed for a cache hit, dropping the oldest entry past 1000, and returning defaultValue only when the request fails. A missing boolean in the payload is rejected.
+
+### SEC-01 Security headers
+
+- **Status:** PASSED
+- **Priority:** P1
+- **Files:** next.config.ts, src/lib/security.test.ts
+- **Expected behavior:** Every path sends X-Content-Type-Options nosniff, X-Frame-Options DENY, Referrer-Policy strict-origin-when-cross-origin, a closed Permissions-Policy, and X-DNS-Prefetch-Control off.
+- **Acceptance:**
+- [x] A document response and an API response carry those headers.
+- [x] The API does not reflect a script from a flag name into HTML.
+- **Test cases:**
+- Read the headers on / and on /api/health.
+- Run the security unit test.
+- **Dependencies:** None.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET / on the dev server sent nosniff, X-Frame-Options DENY, strict-origin-when-cross-origin, Permissions-Policy camera microphone and geolocation empty, and X-DNS-Prefetch-Control off.
+
+### SEC-02 Health check
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/app/api/health/route.ts, src/lib/health-down.test.ts
+- **Expected behavior:** GET /api/health runs SELECT 1. It returns ok true when the database answers and ok false with status 503 when it does not. The failure is logged on the server and the response does not include the exception text.
+- **Acceptance:**
+- [x] A healthy database returns 200 and ok true.
+- [x] An unreachable database returns 503 and ok false.
+- [x] The 503 body has no stack trace.
+- **Test cases:**
+- Call /api/health against the test database.
+- Point a process at a closed port and call it again.
+- Confirm POST /api/health is not a successful check.
+- **Dependencies:** DATA-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET /api/health returned 200 {ok:true} and Cache-Control private, no-store while Postgres was up.
+
+### SEC-03 Concurrent evaluate load
+
+- **Status:** PASSED
+- **Priority:** P2
+- **Files:** src/lib/load.test.ts
+- **Expected behavior:** The load test sends 200 concurrent evaluate checks. They complete without a crash and without mixing one user's result into another.
+- **Acceptance:**
+- [x] 200 checks finish.
+- [x] A forced-on user stays on and a forced-off user stays off under concurrency.
+- **Test cases:**
+- Run the load test once. Do not weaken it if it fails.
+- **Dependencies:** EVAL-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The load test served 200 concurrent evaluate checks with no server errors. It is included in npm test, which passed 39 tests.
+
+### HTTP-01 Session required on dashboard APIs
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** src/lib/actors.ts, src/app/api/flags/route.ts, src/lib/api.test.ts
+- **Expected behavior:** Flag, audit, and team routes require a session. Evaluate and the public flag list require an API key. Health is open. A session cookie is not an API key, and an API key is not a dashboard session.
+- **Acceptance:**
+- [x] No cookie gets 401 on /api/flags.
+- [x] An API key cannot open the dashboard flag route.
+- [x] A session cannot call /api/v1/evaluate.
+- **Test cases:**
+- Cross the two credentials on each route.
+- Call /api/health with no credentials.
+- **Dependencies:** AUTH-02, APIKEY-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET /api/flags without a cookie is 401. The same route with a bearer API key and no session is 401. Evaluate accepts the API key and rejects the session token.
+
+### DEVOPS-01 GitHub Actions CI
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** .github/workflows/ci.yml
+- **Expected behavior:** On a pull request and on a push to main, CI uses Postgres 16, runs prisma db migrate, typecheck, lint, npm test, the SDK build, the Next build, and Playwright. The CI auth secret is a fixture, not a production secret.
+- **Acceptance:**
+- [x] The workflow file contains those steps in that order.
+- [x] Step 2 runs the same commands locally where they do not need a browser vendor install beyond what the repo already uses.
+- **Test cases:**
+- Read the workflow.
+- Run typecheck, lint, and npm test against a local test database in step 2.
+- **Dependencies:** DATA-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The CI workflow runs on pull requests and pushes to main with Postgres 16, then npm ci, prisma db migrate, typecheck, lint, npm test, the SDK build, next build, and Playwright. Those commands passed locally. This pass did not push, so GitHub Actions was not triggered.
+
+### DEVOPS-02 Vercel and Neon deploy shape
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** vercel.json, README.md
+- **Expected behavior:** One deployment is one environment. The build migrates with DIRECT_URL and serves with DATABASE_URL. AUTH_SECRET must be at least 16 characters. The reference site is https://pennant.rejisterjack.com and the README says it is private.
+- **Acceptance:**
+- [x] vercel.json matches the README build command.
+- [x] Step 2 does not print a production secret.
+- [x] The reference host is checked only as a public page, not with a guessed password.
+- **Test cases:**
+- Read the config.
+- In step 2, request the public home page and /api/health without signing in.
+- **Dependencies:** DATA-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** vercel.json builds with prisma db migrate && next build. README documents the pooled DATABASE_URL and the direct DIRECT_URL. The same build command succeeded locally against Postgres 16. The private reference site was not opened and this pass did not deploy.
+
+### DEVOPS-03 SDK publish workflow
+
+- **Status:** PASSED
+- **Priority:** P2
+- **Files:** .github/workflows/publish-sdk.yml, packages/sdk/package.json
+- **Expected behavior:** A tag sdk-v* publishes the package only when the tag matches packages/sdk/package.json version, currently 0.1.1. The workflow uses NPM_TOKEN and does not run on this report.
+- **Acceptance:**
+- [x] The tag check is in the workflow.
+- [x] Step 1 and step 2 do not push an sdk-v tag.
+- **Test cases:**
+- Read the workflow. Do not publish.
+- **Dependencies:** SDK-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** publish-sdk.yml runs on sdk-v* tags, fails when the tag does not match packages/sdk/package.json, and publishes with NPM_TOKEN. The package version is 0.1.1. No tag was pushed.
+
+### TEST-01 Node test suite
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** package.json, src/lib/*.test.ts, packages/sdk/src/index.test.ts
+- **Expected behavior:** npm test runs the listed files with tsx, one at a time. The files cover evaluate, audit summaries, the login limit, validation, security headers, health when the database is down, the API, load, and the SDK. This is not a Vitest suite.
+- **Acceptance:**
+- [x] npm test exits 0.
+- [x] A missing database fails the tests that need it, rather than skipping them silently.
+- **Test cases:**
+- Run npm test once the test database URL is set.
+- Do not delete a failing assertion.
+- **Dependencies:** DATA-01.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** npm test passed 39 tests: rollout, audit summaries, rate limit, validation, security, health-down, the HTTP API, the 200-check load, and the SDK.
+
+### TEST-02 Playwright operator journeys
+
+- **Status:** PASSED
+- **Priority:** P0
+- **Files:** e2e/journeys.spec.ts, playwright.config.ts, e2e/reset.ts
+- **Expected behavior:** The existing Playwright file is the operator journey: setup, flags, keys, team, and audit. Step 2 also walks that journey in Chrome DevTools. The spec is not replaced with a new harness.
+- **Acceptance:**
+- [x] The journey creates a flag and sees it evaluate.
+- [x] A member is blocked from keys and team.
+- [x] Sign out blocks the private pages.
+- **Test cases:**
+- Read the spec, then perform those steps in Chrome DevTools.
+- Run npm run test:e2e only as the repo's existing command, not as a new browser harness.
+- **Dependencies:** UI-01 through UI-06.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** included with UI-05
+- **Notes:** Playwright ran 4 journeys against next start on 127.0.0.1:4173 using the local database. All 4 passed after the team form labels replaced the placeholders the spec typed into.
+
+### TEST-03 Health-down script
+
+- **Status:** PASSED
+- **Priority:** P2
+- **Files:** scripts/health-down-check.ts, src/lib/health-down.test.ts
+- **Expected behavior:** The script and the unit test check that a down database becomes a 503 health response without leaking the error.
+- **Acceptance:**
+- [x] The unit test passes.
+- [x] The script exits 0 against a closed database port.
+- **Test cases:**
+- Run the unit test.
+- Run the script only if its arguments are local and it does not touch the reference deployment.
+- **Dependencies:** SEC-02.
+- **Suspected bugs:** None recorded from the source read.
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The health-down test spawned the script with a database URL on port 1. It returned 503 and {ok:false}, with no stack and no password in the output.
+
+## Assumptions
+
+- The product under test is this Next.js app plus `packages/sdk`. https://pennant.rejisterjack.com is a private reference and was not signed into.
+- `npm test` runs the tsx files listed in package.json. It is not Vitest.
+- Browser checks used Chrome DevTools against `next dev` on 127.0.0.1:3012. `npm run test:e2e` is the existing Playwright suite and was run against `next start` on 127.0.0.1:4173, with `DATABASE_URL` pointed at local Postgres so the production env file was not used.
+- A member may edit flags. API keys and the team are admin-only. That split is what the route handlers implement.
+
+## Risks
+
+- Rotating `AUTH_SECRET` signs everyone out and invalidates API keys, because both hashes include that secret.
+- Percentage rollout needs a stable user id. A check with no user id is off below 100 percent.
+- The login limit lives in process memory. A restart or another server instance clears it.
+- Neon can sleep when idle. The first check after idle can be slow. `/api/health` is the readiness signal.
+- A member who can edit flags can change a production rollout. That is the current role split.
+- The SDK cache, when `cacheTtlMs` is set, can serve a toggle until the TTL ends. The default is 0.
+- Next.js is pinned at 16.4.6. Production `npm audit` reports 0 vulnerabilities. `npm run build` completes on the first run.
+
+## Whole-Product Check
+
+- Local Postgres 16 was on 127.0.0.1:54331. Chrome DevTools walked setup, flags, the editor, keys, team, audit, sign-out, a missing URL, and a thrown error. The temporary throw page was deleted and is not in git.
+- `npm test` passed 39 tests. `npm run typecheck` passed. Eslint on the edited files passed.
+- `npm run build` (`prisma db migrate && next build`) completed on the first run under Next.js 16.4.6. Playwright then passed 4 journeys on that build.
+- A logged-out request for `/flags`, `/audit`, and `/flags/new-checkout` no longer includes flag records. Dashboard APIs return 401 with no session, including when the caller sends an API key instead. Evaluate returns 401 for a missing, short, revoked, or session token.
+- The home response sends `nosniff`, `X-Frame-Options: DENY`, `strict-origin-when-cross-origin`, an empty camera/microphone/geolocation policy, and `X-DNS-Prefetch-Control: off`.
+- Nine failed sign-ins for one email and client address returned 429. The body did not contain the email.
+- Production `npm audit` reports 0 vulnerabilities. The earlier moderate advisory was in Next.js 16.4.3.
+- The flag editor did not overflow at 360, 768, 1024, or 1440. Setup and the home page did not overflow at 360. Body text is rgb(28, 25, 21) on rgb(244, 240, 230). A Lighthouse score was not captured.
+- `GET /robots.txt` disallows `/`. The home document is `noindex, nofollow`. `/favicon.svg` returned 200. A missing URL is titled `Page not found · Pennant`.
+
+## Totals
+
+- Features: 49
+- Passed: 49
+- Blocked: 0
+- P0: 32
+- P1: 11
+- P2: 6
+- Bugs found: 2
+- Bugs fixed: 2
+- UI issues fixed: 4
+
+The two bugs are the parallel setup that created two admins, and the logged-out HTML that included flag records. The four UI fixes are team-form labels, the audit filter label, the current-page mark in the nav, and the not-found and error titles.
+
+## Still Blocked
+
+None.
+
+## Known Limitations
+
+- Deferred, and not feature rows: audience segments, flag-change webhooks, experiments and analytics, several environments in one deploy, OAuth, email, a browser SDK, billing, and a dark theme.
+- https://pennant.rejisterjack.com was not exercised. This pass did not deploy.
+- Login limiting resets when the process restarts.
+- Neon compute can sleep. The first flag check after idle can be slow.
+- Dev-dependency `npm audit` still reports findings that are not in the production install. Production audit is clean.
+
+## Launch Checklist
+
+- Set `DATABASE_URL` to the pooled Neon host and `DIRECT_URL` to the direct host.
+- Set `AUTH_SECRET` to at least 16 random characters. Back up the database before rotating it.
+- Deploy with the existing Vercel command, `prisma db migrate && next build`.
+- After deploy, confirm `GET /api/health` returns `{ "ok": true }`, create the admin at `/setup`, create an API key, and check a flag.
+- Next.js is already pinned at 16.4.6. Do not deploy a lockfile that resolves back to 16.4.3.
+- Do not push an `sdk-v*` tag unless `packages/sdk/package.json` is the version to publish. That version is 0.1.1.
+
+## Decision
+
+GO. All 49 features passed and none are blocked. Next.js 16.4.6 needs no further security upgrade. Production `npm audit` reports 0 vulnerabilities, and the production build completes on the first run.

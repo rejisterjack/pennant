@@ -2,15 +2,9 @@ import Link from "next/link";
 import { io } from "next/cache";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/auth-forms";
+import { ShellNav } from "@/components/shell-nav";
 import { currentUser } from "@/lib/current-user";
 import { userCount } from "@/lib/auth";
-
-const links = [
-  { href: "/flags", label: "Flags" },
-  { href: "/audit", label: "Audit" },
-  { href: "/settings/keys", label: "API keys" },
-  { href: "/settings/team", label: "Team" },
-];
 
 export async function AuthedShell({ children }: { children: React.ReactNode }) {
   await io();
@@ -39,13 +33,7 @@ export async function AuthedShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <div className="mx-auto grid max-w-5xl gap-8 px-5 py-8 md:grid-cols-[160px_1fr]">
-        <nav className="flex gap-4 md:flex-col">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href} className="text-sm font-medium hover:text-accent">
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        <ShellNav />
         <main>{children}</main>
       </div>
     </div>

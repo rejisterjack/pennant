@@ -19,7 +19,7 @@
   "dependencies": {
     "@prisma/orm-postgres": "^8.0.0-rc.21",
     "dotenv": "^18.0.9",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -31,7 +31,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
+    "eslint-config-next": "16.4.6",
     "pg": "^8.23.1",
     "prisma": "^8.0.0-rc.28",
     "tailwindcss": "^4",

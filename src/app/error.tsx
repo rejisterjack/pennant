@@ -1,6 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
+
 export default function ErrorPage({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => {
+    document.title = "Error · Pennant";
+  }, []);
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-16">
       <p className="text-sm font-semibold tracking-[0.18em]">PENNANT</p>
