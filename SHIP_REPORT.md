@@ -55,7 +55,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | HTTP-01 | Session required on dashboard APIs | P0 | PASSED | 0 | 0 | 0 | Dashboard routes require a session. An API key is not a session. |
 | DEVOPS-01 | GitHub Actions CI | P0 | PASSED | 0 | 0 | 0 | The CI steps passed locally. The workflow was not pushed. |
 | DEVOPS-02 | Vercel and Neon deploy shape | P0 | PASSED | 0 | 0 | 0 | The Vercel build command succeeded locally. No deploy was made. |
-| DEVOPS-03 | SDK publish workflow | P2 | NOT STARTED | | | | |
+| DEVOPS-03 | SDK publish workflow | P2 | PASSED | 0 | 0 | 0 | The publish workflow checks the tag against 0.1.1. No tag was pushed. |
 | TEST-01 | Node test suite | P0 | NOT STARTED | | | | |
 | TEST-02 | Playwright operator journeys | P0 | NOT STARTED | | | | |
 | TEST-03 | Health-down script | P2 | NOT STARTED | | | | |
@@ -1071,22 +1071,22 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### DEVOPS-03 SDK publish workflow
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** .github/workflows/publish-sdk.yml, packages/sdk/package.json
 - **Expected behavior:** A tag sdk-v* publishes the package only when the tag matches packages/sdk/package.json version, currently 0.1.1. The workflow uses NPM_TOKEN and does not run on this report.
 - **Acceptance:**
-- [ ] The tag check is in the workflow.
-- [ ] Step 1 and step 2 do not push an sdk-v tag.
+- [x] The tag check is in the workflow.
+- [x] Step 1 and step 2 do not push an sdk-v tag.
 - **Test cases:**
 - Read the workflow. Do not publish.
 - **Dependencies:** SDK-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** publish-sdk.yml runs on sdk-v* tags, fails when the tag does not match packages/sdk/package.json, and publishes with NPM_TOKEN. The package version is 0.1.1. No tag was pushed.
 
 ### TEST-01 Node test suite
 
