@@ -22,7 +22,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | AUTH-04 | Admin and member roles | P0 | PASSED | 0 | 0 | 0 | Members edit flags. Keys and team changes are 403 for a member. |
 | AUTH-05 | Login failure limit | P0 | PASSED | 0 | 0 | 0 | The ninth failure from the same address is 429. Another address is not locked. |
 | AUTH-06 | Login error does not reveal which part failed | P1 | PASSED | 0 | 0 | 0 | Unknown email and a wrong password return the same 401 body. |
-| APIKEY-01 | Create and list API keys | P0 | NOT STARTED | | | | |
+| APIKEY-01 | Create and list API keys | P0 | PASSED | 0 | 0 | 0 | The secret is returned once and is absent from the list. |
 | APIKEY-02 | Revoke an API key | P0 | NOT STARTED | | | | |
 | FLAG-01 | Create, read, and delete a flag | P0 | NOT STARTED | | | | |
 | FLAG-02 | Toggle and rollout percent | P0 | NOT STARTED | | | | |
@@ -341,26 +341,26 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### APIKEY-01 Create and list API keys
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/lib/secrets.ts, src/lib/api-keys.ts, src/app/api/api-keys/route.ts, src/app/(app)/settings/keys/page.tsx
 - **Expected behavior:** An admin creates a key named by the operator. The secret is pn_ plus a random token and is returned once. Later lists show the prefix and name, not the secret. The database stores a hash that includes AUTH_SECRET.
 - **Acceptance:**
-- [ ] Create returns the pn_ secret once.
-- [ ] A following list does not contain that secret.
-- [ ] A member and a logged-out caller cannot create a key.
-- [ ] Rotating AUTH_SECRET invalidates existing keys, as the README says.
+- [x] Create returns the pn_ secret once.
+- [x] A following list does not contain that secret.
+- [x] A member and a logged-out caller cannot create a key.
+- [x] Rotating AUTH_SECRET invalidates existing keys, as the README says.
 - **Test cases:**
 - Create a key, copy the secret, reload the list, and search the list for the secret.
 - Create with an empty name and a very long name.
 - Create as a member.
 - **Dependencies:** AUTH-04.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Creating a key returned 201 and a pn_ secret. GET /api/api-keys listed the key and did not include the secret, keyHash, or a password hash.
 
 ### APIKEY-02 Revoke an API key
 
