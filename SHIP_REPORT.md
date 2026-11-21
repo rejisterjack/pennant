@@ -30,7 +30,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | FLAG-04 | Preview a user against a flag | P1 | PASSED | 0 | 0 | 0 | Preview returns the decision reason. A missing flag is 404. |
 | FLAG-05 | Flag key shape | P1 | PASSED | 0 | 0 | 0 | Uppercase, a leading digit, and a 65-character key are rejected. |
 | AUDIT-01 | Audit row on a flag change | P0 | PASSED | 0 | 0 | 0 | Create, update, and target changes each write an audit row. |
-| AUDIT-02 | List and filter the audit log | P1 | NOT STARTED | | | | |
+| AUDIT-02 | List and filter the audit log | P1 | PASSED | 0 | 0 | 0 | The flag filter is exact. Logged-out requests are 401. |
 | AUDIT-03 | Readable audit summaries | P2 | NOT STARTED | | | | |
 | TEAM-01 | Admin adds a teammate | P0 | NOT STARTED | | | | |
 | TEAM-02 | Admin removes a member | P0 | NOT STARTED | | | | |
@@ -516,24 +516,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### AUDIT-02 List and filter the audit log
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** src/app/api/audit/route.ts, src/app/(app)/audit/page.tsx
 - **Expected behavior:** A signed-in user can list audit events. Filters narrow by flag key. A logged-out caller cannot read the log.
 - **Acceptance:**
-- [ ] The list returns the events from AUDIT-01.
-- [ ] A filter for one flag hides the others.
-- [ ] No session is rejected.
+- [x] The list returns the events from AUDIT-01.
+- [x] A filter for one flag hides the others.
+- [x] No session is rejected.
 - **Test cases:**
 - List with no filter, with a known key, and with a key that has no events.
 - Request the route with no cookie.
 - **Dependencies:** AUDIT-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Filtering by new-checkout returned only that flag. The unfiltered list also contained drop-table. A logged-out request was 401.
 
 ### AUDIT-03 Readable audit summaries
 
