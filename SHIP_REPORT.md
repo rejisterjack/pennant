@@ -46,7 +46,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-09 | Not found and error pages | P1 | PASSED | 0 | 0 | 1 | Not-found and the safe error page render. The probe page was deleted. |
 | UI-10 | Crawl policy | P2 | PASSED | 0 | 0 | 0 | robots.txt disallows /. The home page is noindex, nofollow. |
 | SEO-01 | Document title, description, and icon | P1 | PASSED | 0 | 0 | 0 | Titles use the Pennant template. /favicon.svg returns 200. |
-| SDK-01 | Server SDK package | P0 | NOT STARTED | | | | |
+| SDK-01 | Server SDK package | P0 | PASSED | 0 | 0 | 0 | The SDK package builds and publishes only dist. |
 | SDK-02 | isEnabled calls evaluate | P0 | NOT STARTED | | | | |
 | SDK-03 | Cache and default value | P1 | NOT STARTED | | | | |
 | SEC-01 | Security headers | P1 | PASSED | 0 | 0 | 0 | The documented security headers are on the home response. |
@@ -885,23 +885,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### SDK-01 Server SDK package
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** packages/sdk/package.json, packages/sdk/tsconfig.json, .github/workflows/ci.yml
 - **Expected behavior:** The workspace package @rejisterjack/pennant is version 0.1.1, ESM, and built with tsc. CI builds it with npm run build -w @rejisterjack/pennant. It is server-side only.
 - **Acceptance:**
-- [ ] The package typechecks and builds.
-- [ ] The published files are dist only.
+- [x] The package typechecks and builds.
+- [x] The published files are dist only.
 - **Test cases:**
 - Run the workspace build.
 - Do not publish a tag in step 1.
 - **Dependencies:** None.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The workspace package is @rejisterjack/pennant 0.1.1, type module, files limited to dist, engines node >= 20. npm run build -w @rejisterjack/pennant completed and dist exists. The package typecheck is included in npm run typecheck, which passed.
 
 ### SDK-02 isEnabled calls evaluate
 
