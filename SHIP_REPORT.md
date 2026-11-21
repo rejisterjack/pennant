@@ -16,7 +16,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | EVAL-02 | GET /api/v1/evaluate | P0 | PASSED | 0 | 0 | 0 | No token, short token, and a session bearer are 401. Unknown flag is enabled false. Over-long flag and user id are 400. |
 | EVAL-03 | GET /api/v1/flags | P1 | PASSED | 0 | 0 | 0 | List includes the flag and rollout. No secret fields. Revoked key is 401. |
 | EVAL-04 | Evaluate responses are not cached by a CDN | P0 | PASSED | 0 | 0 | 0 | Cache-Control private, no-store. The next check saw the toggle. |
-| AUTH-01 | First admin setup | P0 | NOT STARTED | | | | |
+| AUTH-01 | First admin setup | P0 | PASSED | 1 | 1 | 0 | Parallel setup both returned 201. An advisory lock now leaves one admin. |
 | AUTH-02 | Email and password session | P0 | NOT STARTED | | | | |
 | AUTH-03 | Sign out | P0 | NOT STARTED | | | | |
 | AUTH-04 | Admin and member roles | P0 | NOT STARTED | | | | |
@@ -211,26 +211,26 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### AUTH-01 First admin setup
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/auth/setup/route.ts, src/app/setup/page.tsx, src/lib/auth.ts
 - **Expected behavior:** POST /api/auth/setup creates the first admin and sets a session cookie. Email is trimmed and lowercased. Password must be 8 to 200 characters. Name must be 1 to 80 characters. After an account exists, setup no longer creates another one.
 - **Acceptance:**
-- [ ] The first valid body returns 201 and a session cookie.
-- [ ] A second setup does not create another admin.
-- [ ] A short password, a bad email, and invalid JSON are 400.
-- [ ] The setup screen is not the way to add later users.
+- [x] The first valid body returns 201 and a session cookie.
+- [x] A second setup does not create another admin.
+- [x] A short password, a bad email, and invalid JSON are 400.
+- [x] The setup screen is not the way to add later users.
 - **Test cases:**
 - Post a valid admin, then post again.
 - Post an empty body, a password of 7 characters, an emoji-only name, and a non-object JSON body.
 - Two parallel setup requests must not both succeed.
 - **Dependencies:** DATA-01, AUTH_SECRET of at least 16 characters.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 1
+- **Bugs Fixed:** 1
+- **UI Issues Fixed:** 0
+- **Files Changed:** src/lib/auth.ts
+- **Notes:** Setup returned 201, stored the email in lowercase, trimmed the name, and set an HttpOnly cookie. A second setup is 409. Two simultaneous setups both returned 201 before the fix. setupAccount now takes pg_advisory_xact_lock(4815162343) before the count. The retry was 201 and 409 with one admin row. The API suite then passed 13/13, including the simultaneous-setup test.
 
 ### AUTH-02 Email and password session
 

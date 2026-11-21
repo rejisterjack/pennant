@@ -28,6 +28,9 @@ export async function setupAccount(input: {
   const passwordHash = await hashPassword(input.password);
   try {
     return await db.transaction(async (tx) => {
+      // Two setups can both see zero users unless this transaction takes the lock first.
+      const lock = tx.raw.sql`SELECT pg_advisory_xact_lock(4815162343)`.affectedCount().build();
+      await tx.execute(lock);
       const { total } = await tx.orm.public.User.aggregate((agg) => ({ total: agg.count() }));
       if (total > 0) throw new HttpError(409, "Setup is already complete");
       const user = await tx.orm.public.User.create({
