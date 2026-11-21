@@ -33,7 +33,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | AUDIT-02 | List and filter the audit log | P1 | PASSED | 0 | 0 | 0 | The flag filter is exact. Logged-out requests are 401. |
 | AUDIT-03 | Readable audit summaries | P2 | PASSED | 0 | 0 | 0 | Rows summarize the toggle, the percent, and the target change. |
 | TEAM-01 | Admin adds a teammate | P0 | PASSED | 0 | 0 | 0 | An admin can add a member. The response has no password hash. |
-| TEAM-02 | Admin removes a member | P0 | NOT STARTED | | | | |
+| TEAM-02 | Admin removes a member | P0 | PASSED | 0 | 0 | 0 | Deleting a member returns 200 and ends that session. |
 | TEAM-03 | The last admin cannot be deleted | P0 | NOT STARTED | | | | |
 | UI-01 | Flags list and empty state | P0 | NOT STARTED | | | | |
 | UI-02 | Flag detail editor | P0 | NOT STARTED | | | | |
@@ -580,23 +580,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### TEAM-02 Admin removes a member
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/users/[id]/route.ts
 - **Expected behavior:** An admin can delete a member. That user's sessions are removed with the user, so the old cookie stops working. A member cannot delete a user.
 - **Acceptance:**
-- [ ] After deletion, the member's cookie cannot open the dashboard.
-- [ ] A member cannot call the delete route.
+- [x] After deletion, the member's cookie cannot open the dashboard.
+- [x] A member cannot call the delete route.
 - **Test cases:**
 - Delete a member while that member has a session, then reuse the cookie.
 - Delete an unknown id.
 - **Dependencies:** TEAM-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Deleting the member returned 200 and that member's session then got 401. Deleting a second admin also returned 200. The API suite covers two admins deleting each other at once and leaves one admin.
 
 ### TEAM-03 The last admin cannot be deleted
 
