@@ -4,7 +4,7 @@ Pennant is a self-hosted feature-flag service. An operator creates a flag in the
 A flag is off, on for everyone, a stable percentage of user ids, or forced on or off for one named user. Each change is an audit event.
 The first account is created at /setup and is an admin. Later people sign in with email and password. Apps use a separate pn_ API key. Members can edit flags. Only an admin manages keys and the team.
 One deployment is one environment, on Vercel with Neon, or locally with Postgres 15 or newer. The reference site is https://pennant.rejisterjack.com and the README says that instance is private.
-Testing finished on 21 Nov 2026 against a local Postgres 16. 49 features passed. The decision is NO-GO until Next.js is upgraded off 16.4.3.
+Testing finished on 21 Nov 2026 against a local Postgres 16. 49 features passed. Next.js is 16.4.6. The decision is GO.
 
 ## Feature Table
 
@@ -1151,38 +1151,46 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ## Assumptions
 
-- The product is this Next.js app plus packages/sdk. The hosted site in the README is a private reference, not a shared demo with a published password.
-- An earlier SHIP_REPORT.md listed deferred gaps as feature rows and called the test runner Vitest. This report replaces it. npm test uses tsx.
-- Step 2 browser work uses Chrome DevTools. The Playwright file stays the existing suite. No new browser harness is added.
-- AUTH_SECRET of at least 16 characters is required before any session or key hash can be created. Step 1 did not generate one and did not read a real .env.
-- Member access to flags, with keys and team reserved for admins, is the intended rule from the route handlers.
+- The product under test is this Next.js app plus `packages/sdk`. https://pennant.rejisterjack.com is a private reference and was not signed into.
+- `npm test` runs the tsx files listed in package.json. It is not Vitest.
+- Browser checks used Chrome DevTools against `next dev` on 127.0.0.1:3012. `npm run test:e2e` is the existing Playwright suite and was run against `next start` on 127.0.0.1:4173, with `DATABASE_URL` pointed at local Postgres so the production env file was not used.
+- A member may edit flags. API keys and the team are admin-only. That split is what the route handlers implement.
 
 ## Risks
 
-- Rotating AUTH_SECRET signs everyone out and invalidates API keys, because both hashes include that secret.
+- Rotating `AUTH_SECRET` signs everyone out and invalidates API keys, because both hashes include that secret.
 - Percentage rollout needs a stable user id. A check with no user id is off below 100 percent.
 - The login limit lives in process memory. A restart or another server instance clears it.
-- Neon can sleep when idle. The README says the first check after idle can be slow. /api/health is the readiness signal.
-- A member who can edit flags can also change a production rollout. That is the current role split, not a second admin gate.
-- The SDK cache, when enabled, can serve a toggle until the TTL ends. The default TTL is 0.
+- Neon can sleep when idle. The first check after idle can be slow. `/api/health` is the readiness signal.
+- A member who can edit flags can change a production rollout. That is the current role split.
+- The SDK cache, when `cacheTtlMs` is set, can serve a toggle until the TTL ends. The default is 0.
+- Next.js is pinned at 16.4.6. Production `npm audit` reports 0 vulnerabilities. `npm run build` completes on the first run.
 
 ## Whole-Product Check
 
-Local Postgres 16 on 127.0.0.1:54331. Dashboard dev server on 127.0.0.1:3012, then the production build served by Playwright on 127.0.0.1:4173. Chrome DevTools drove the screens. The private reference site was not used.
-
-Signed-out requests to the flag, audit, and flag-detail pages no longer include records. Dashboard APIs reject a missing session and reject an API key used as a session. Evaluate rejects a missing, short, revoked, and session token. Security headers are present on the home response. Login limiting returned 429 on the ninth failure. npm test passed 39 tests. npm run typecheck and eslint on the edited files passed. The production build succeeded. Playwright passed 4 journeys. npm audit for production dependencies reports 1 moderate advisory, in Next.js 16.4.3. Dev-dependency audit findings were not in the production install.
-
-A full Lighthouse score was not captured. Checked widths were 360, 768, 1024, and 1440 on the flag editor, and 360 on setup and the home page. Body text is rgb(28, 25, 21) on rgb(244, 240, 230). The product has one light paper theme.
-
-## Final Summary
-
-| ID | Feature | Priority | Status | Bugs Found | Bugs Fixed | UI Issues Fixed | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| ALL | 49 features |  | PASSED | 2 | 2 | 4 | See the feature table. |
+- Local Postgres 16 was on 127.0.0.1:54331. Chrome DevTools walked setup, flags, the editor, keys, team, audit, sign-out, a missing URL, and a thrown error. The temporary throw page was deleted and is not in git.
+- `npm test` passed 39 tests. `npm run typecheck` passed. Eslint on the edited files passed.
+- `npm run build` (`prisma db migrate && next build`) completed on the first run under Next.js 16.4.6. Playwright then passed 4 journeys on that build.
+- A logged-out request for `/flags`, `/audit`, and `/flags/new-checkout` no longer includes flag records. Dashboard APIs return 401 with no session, including when the caller sends an API key instead. Evaluate returns 401 for a missing, short, revoked, or session token.
+- The home response sends `nosniff`, `X-Frame-Options: DENY`, `strict-origin-when-cross-origin`, an empty camera/microphone/geolocation policy, and `X-DNS-Prefetch-Control: off`.
+- Nine failed sign-ins for one email and client address returned 429. The body did not contain the email.
+- Production `npm audit` reports 0 vulnerabilities. The earlier moderate advisory was in Next.js 16.4.3.
+- The flag editor did not overflow at 360, 768, 1024, or 1440. Setup and the home page did not overflow at 360. Body text is rgb(28, 25, 21) on rgb(244, 240, 230). A Lighthouse score was not captured.
+- `GET /robots.txt` disallows `/`. The home document is `noindex, nofollow`. `/favicon.svg` returned 200. A missing URL is titled `Page not found · Pennant`.
 
 ## Totals
 
-49 features passed. 0 blocked. Bugs found 2, bugs fixed 2. UI issues fixed 4.
+- Features: 49
+- Passed: 49
+- Blocked: 0
+- P0: 32
+- P1: 11
+- P2: 6
+- Bugs found: 2
+- Bugs fixed: 2
+- UI issues fixed: 4
+
+The two bugs are the parallel setup that created two admins, and the logged-out HTML that included flag records. The four UI fixes are team-form labels, the audit filter label, the current-page mark in the nav, and the not-found and error titles.
 
 ## Still Blocked
 
@@ -1190,12 +1198,21 @@ None.
 
 ## Known Limitations
 
-Segments, webhooks, experiments, several environments in one deploy, OAuth, email, a browser SDK, billing, and a dark theme are deferred. The reference site https://pennant.rejisterjack.com is private and was not exercised. Login limiting is in memory, so it resets when the process restarts. Neon compute can sleep. Next.js 16.4.3 has a published security advisory. Production npm audit reports that one moderate finding. The first production build stops to show the upgrade notice and succeeds on the retry.
+- Deferred, and not feature rows: audience segments, flag-change webhooks, experiments and analytics, several environments in one deploy, OAuth, email, a browser SDK, billing, and a dark theme.
+- https://pennant.rejisterjack.com was not exercised. This pass did not deploy.
+- Login limiting resets when the process restarts.
+- Neon compute can sleep. The first flag check after idle can be slow.
+- Dev-dependency `npm audit` still reports findings that are not in the production install. Production audit is clean.
 
 ## Launch Checklist
 
-Set DATABASE_URL to the pooled Neon host and DIRECT_URL to the direct host. Set AUTH_SECRET to at least 16 random characters. Deploy with the existing Vercel build command. Confirm GET /api/health returns ok true, create the admin at /setup, create an API key, and check a flag. Keep a database backup before rotating AUTH_SECRET, because rotation signs everyone out and invalidates API keys. Do not publish an sdk-v tag until the package version is the one you intend to release.
+- Set `DATABASE_URL` to the pooled Neon host and `DIRECT_URL` to the direct host.
+- Set `AUTH_SECRET` to at least 16 random characters. Back up the database before rotating it.
+- Deploy with the existing Vercel command, `prisma db migrate && next build`.
+- After deploy, confirm `GET /api/health` returns `{ "ok": true }`, create the admin at `/setup`, create an API key, and check a flag.
+- Next.js is already pinned at 16.4.6. Do not deploy a lockfile that resolves back to 16.4.3.
+- Do not push an `sdk-v*` tag unless `packages/sdk/package.json` is the version to publish. That version is 0.1.1.
 
 ## Decision
 
-NO-GO until Next.js is upgraded off 16.4.3. The product behavior tested here passed. The framework reports a known security vulnerability and production npm audit reports one moderate advisory in Next.js.
+GO. All 49 features passed and none are blocked. Next.js 16.4.6 needs no further security upgrade. Production `npm audit` reports 0 vulnerabilities, and the production build completes on the first run.
