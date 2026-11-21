@@ -52,7 +52,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | SEC-01 | Security headers | P1 | NOT STARTED | | | | |
 | SEC-02 | Health check | P0 | NOT STARTED | | | | |
 | SEC-03 | Concurrent evaluate load | P2 | NOT STARTED | | | | |
-| HTTP-01 | Session required on dashboard APIs | P0 | NOT STARTED | | | | |
+| HTTP-01 | Session required on dashboard APIs | P0 | PASSED | 0 | 0 | 0 | Dashboard routes require a session. An API key is not a session. |
 | DEVOPS-01 | GitHub Actions CI | P0 | NOT STARTED | | | | |
 | DEVOPS-02 | Vercel and Neon deploy shape | P0 | NOT STARTED | | | | |
 | DEVOPS-03 | SDK publish workflow | P2 | NOT STARTED | | | | |
@@ -1009,24 +1009,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### HTTP-01 Session required on dashboard APIs
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/lib/actors.ts, src/app/api/flags/route.ts, src/lib/api.test.ts
 - **Expected behavior:** Flag, audit, and team routes require a session. Evaluate and the public flag list require an API key. Health is open. A session cookie is not an API key, and an API key is not a dashboard session.
 - **Acceptance:**
-- [ ] No cookie gets 401 on /api/flags.
-- [ ] An API key cannot open the dashboard flag route.
-- [ ] A session cannot call /api/v1/evaluate.
+- [x] No cookie gets 401 on /api/flags.
+- [x] An API key cannot open the dashboard flag route.
+- [x] A session cannot call /api/v1/evaluate.
 - **Test cases:**
 - Cross the two credentials on each route.
 - Call /api/health with no credentials.
 - **Dependencies:** AUTH-02, APIKEY-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET /api/flags without a cookie is 401. The same route with a bearer API key and no session is 401. Evaluate accepts the API key and rejects the session token.
 
 ### DEVOPS-01 GitHub Actions CI
 
