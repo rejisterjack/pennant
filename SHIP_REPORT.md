@@ -27,7 +27,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | FLAG-01 | Create, read, and delete a flag | P0 | PASSED | 0 | 0 | 0 | Create, read, and duplicate key return 201, 200, and 409. |
 | FLAG-02 | Toggle and rollout percent | P0 | PASSED | 0 | 0 | 0 | Toggle and percent 40 persist. Out-of-range percents are 400. |
 | FLAG-03 | Per-user force on and force off | P0 | PASSED | 0 | 0 | 0 | Force on and force off replace one target. Surrounding spaces are trimmed. |
-| FLAG-04 | Preview a user against a flag | P1 | NOT STARTED | | | | |
+| FLAG-04 | Preview a user against a flag | P1 | PASSED | 0 | 0 | 0 | Preview returns the decision reason. A missing flag is 404. |
 | FLAG-05 | Flag key shape | P1 | NOT STARTED | | | | |
 | AUDIT-01 | Audit row on a flag change | P0 | NOT STARTED | | | | |
 | AUDIT-02 | List and filter the audit log | P1 | NOT STARTED | | | | |
@@ -454,24 +454,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### FLAG-04 Preview a user against a flag
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** src/app/api/flags/[key]/preview/route.ts
 - **Expected behavior:** A signed-in user can preview whether one external id would be on for a flag, without minting an API key. The preview uses the same decision as evaluate.
 - **Acceptance:**
-- [ ] Preview matches GET /api/v1/evaluate for the same flag and user.
-- [ ] A logged-out caller cannot preview.
-- [ ] An unknown flag is a not-found or an off result, and the response does not throw a stack.
+- [x] Preview matches GET /api/v1/evaluate for the same flag and user.
+- [x] A logged-out caller cannot preview.
+- [x] An unknown flag is a not-found or an off result, and the response does not throw a stack.
 - **Test cases:**
 - Preview a forced user, a rolled-out user, and a user id of spaces.
 - Call preview with no session.
 - **Dependencies:** FLAG-03, EVAL-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Preview of the denied user was {enabled:false, reason:target_deny}. Another user was rollout_out. A missing flag was 404 Flag not found.
 
 ### FLAG-05 Flag key shape
 
