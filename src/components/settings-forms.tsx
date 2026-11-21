@@ -112,25 +112,25 @@ export function CreateUserForm() {
         }
       }}
     >
-      <input required name="name" placeholder="Name" className="h-11 rounded-md border border-line bg-card px-3" />
-      <input
-        required
-        name="email"
-        type="email"
-        placeholder="Email"
-        className="h-11 rounded-md border border-line bg-card px-3"
-      />
-      <input
-        required
-        name="password"
-        type="password"
-        placeholder="Password"
-        className="h-11 rounded-md border border-line bg-card px-3"
-      />
-      <select name="role" className="h-11 rounded-md border border-line bg-card px-3">
-        <option value="member">Member</option>
-        <option value="admin">Admin</option>
-      </select>
+      <label className="flex flex-col gap-1.5 text-sm" htmlFor="teammate-name">
+        <span className="font-medium">Name</span>
+        <input id="teammate-name" required name="name" className="h-11 rounded-md border border-line bg-card px-3" />
+      </label>
+      <label className="flex flex-col gap-1.5 text-sm" htmlFor="teammate-email">
+        <span className="font-medium">Email</span>
+        <input id="teammate-email" required name="email" type="email" className="h-11 rounded-md border border-line bg-card px-3" />
+      </label>
+      <label className="flex flex-col gap-1.5 text-sm" htmlFor="teammate-password">
+        <span className="font-medium">Password</span>
+        <input id="teammate-password" required name="password" type="password" className="h-11 rounded-md border border-line bg-card px-3" />
+      </label>
+      <label className="flex flex-col gap-1.5 text-sm">
+        <span className="font-medium">Role</span>
+        <select name="role" className="h-11 rounded-md border border-line bg-card px-3">
+          <option value="member">Member</option>
+          <option value="admin">Admin</option>
+        </select>
+      </label>
       <button type="submit" className="h-11 rounded-md bg-accent px-4 text-sm font-medium text-accent-ink sm:col-span-2">
         Add teammate
       </button>

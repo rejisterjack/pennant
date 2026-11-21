@@ -39,7 +39,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-02 | Flag detail editor | P0 | PASSED | 0 | 0 | 0 | Toggle, percent, target, preview, and delete worked in Chrome. No overflow at the checked widths. |
 | UI-03 | New flag form | P0 | PASSED | 0 | 0 | 0 | The form creates a flag and opens it. Labels are present. |
 | UI-04 | Setup and login screens | P0 | PASSED | 0 | 0 | 0 | Setup, a wrong password, and the closed setup screen worked in Chrome. |
-| UI-05 | API keys and team settings | P0 | NOT STARTED | | | | |
+| UI-05 | API keys and team settings | P0 | PASSED | 0 | 0 | 1 | The one-time secret disappears on refresh. Team fields now have visible labels. |
 | UI-06 | Audit page | P1 | NOT STARTED | | | | |
 | UI-07 | Public home page | P2 | NOT STARTED | | | | |
 | UI-08 | Signed-in shell | P1 | NOT STARTED | | | | |
@@ -722,14 +722,14 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-05 API keys and team settings
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/(app)/settings/keys/page.tsx, src/app/(app)/settings/team/page.tsx, src/components/settings-forms.tsx
 - **Expected behavior:** An admin sees both settings pages. A member does not get the create actions. A newly created key secret is visible once on the page.
 - **Acceptance:**
-- [ ] The secret is shown once and is not in the list after refresh.
-- [ ] A member is blocked from the admin actions.
-- [ ] The secret is not placed in the address bar.
+- [x] The secret is shown once and is not in the list after refresh.
+- [x] A member is blocked from the admin actions.
+- [x] The secret is not placed in the address bar.
 - **Test cases:**
 - Create a key, refresh, and confirm the secret is gone.
 - Open both pages as a member.
@@ -739,11 +739,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
 - **Dependencies:** APIKEY-01, TEAM-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 1
+- **Files Changed:** src/components/settings-forms.tsx, e2e/journeys.spec.ts
+- **Notes:** An admin created a key, saw the secret once, and after refresh saw only the prefix. The secret was not in the address. A member saw Only admins can manage API keys and no secret. The team form previously used placeholders alone. It now has visible Name, Email, Password, and Role labels. The member journey was updated to those fields and passed.
 
 ### UI-06 Audit page
 

@@ -83,9 +83,9 @@ test("an API key follows a forced user and stops working when revoked", async ({
 test("a member can open flags but not keys or team management", async ({ page, browser }) => {
   await createAdmin(page);
   await page.getByRole("link", { name: "Team" }).click();
-  await page.getByPlaceholder("Name").fill("Grace");
-  await page.getByPlaceholder("Email").fill("grace@example.com");
-  await page.getByPlaceholder("Password").fill("correct-horse");
+  await page.locator("#teammate-name").fill("Grace");
+  await page.locator("#teammate-email").fill("grace@example.com");
+  await page.locator("#teammate-password").fill("correct-horse");
   await page.getByRole("button", { name: "Add teammate" }).click();
   await expect(page.getByText("grace@example.com")).toBeVisible();
 
