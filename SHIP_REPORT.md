@@ -58,7 +58,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | DEVOPS-03 | SDK publish workflow | P2 | PASSED | 0 | 0 | 0 | The publish workflow checks the tag against 0.1.1. No tag was pushed. |
 | TEST-01 | Node test suite | P0 | PASSED | 0 | 0 | 0 | The Node test suite passed, 39 tests. |
 | TEST-02 | Playwright operator journeys | P0 | PASSED | 0 | 0 | 0 | Four Playwright journeys passed against the local production server. |
-| TEST-03 | Health-down script | P2 | NOT STARTED | | | | |
+| TEST-03 | Health-down script | P2 | PASSED | 0 | 0 | 0 | A refused database returns 503 and {ok:false} with no stack. |
 
 ## Gaps
 
@@ -1131,23 +1131,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### TEST-03 Health-down script
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P2
 - **Files:** scripts/health-down-check.ts, src/lib/health-down.test.ts
 - **Expected behavior:** The script and the unit test check that a down database becomes a 503 health response without leaking the error.
 - **Acceptance:**
-- [ ] The unit test passes.
-- [ ] The script exits 0 against a closed database port.
+- [x] The unit test passes.
+- [x] The script exits 0 against a closed database port.
 - **Test cases:**
 - Run the unit test.
 - Run the script only if its arguments are local and it does not touch the reference deployment.
 - **Dependencies:** SEC-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The health-down test spawned the script with a database URL on port 1. It returned 503 and {ok:false}, with no stack and no password in the output.
 
 ## Assumptions
 
@@ -1165,3 +1165,37 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Neon can sleep when idle. The README says the first check after idle can be slow. /api/health is the readiness signal.
 - A member who can edit flags can also change a production rollout. That is the current role split, not a second admin gate.
 - The SDK cache, when enabled, can serve a toggle until the TTL ends. The default TTL is 0.
+
+## Whole-Product Check
+
+Local Postgres 16 on 127.0.0.1:54331. Dashboard dev server on 127.0.0.1:3012, then the production build served by Playwright on 127.0.0.1:4173. Chrome DevTools drove the screens. The private reference site was not used.
+
+Signed-out requests to the flag, audit, and flag-detail pages no longer include records. Dashboard APIs reject a missing session and reject an API key used as a session. Evaluate rejects a missing, short, revoked, and session token. Security headers are present on the home response. Login limiting returned 429 on the ninth failure. npm test passed 39 tests. npm run typecheck and eslint on the edited files passed. The production build succeeded. Playwright passed 4 journeys. npm audit for production dependencies reports 1 moderate advisory, in Next.js 16.4.3. Dev-dependency audit findings were not in the production install.
+
+A full Lighthouse score was not captured. Checked widths were 360, 768, 1024, and 1440 on the flag editor, and 360 on setup and the home page. Body text is rgb(28, 25, 21) on rgb(244, 240, 230). The product has one light paper theme.
+
+## Final Summary
+
+| ID | Feature | Priority | Status | Bugs Found | Bugs Fixed | UI Issues Fixed | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| ALL | 49 features |  | PASSED | 2 | 2 | 4 | See the feature table. |
+
+## Totals
+
+49 features passed. 0 blocked. Bugs found 2, bugs fixed 2. UI issues fixed 4.
+
+## Still Blocked
+
+None.
+
+## Known Limitations
+
+Segments, webhooks, experiments, several environments in one deploy, OAuth, email, a browser SDK, billing, and a dark theme are deferred. The reference site https://pennant.rejisterjack.com is private and was not exercised. Login limiting is in memory, so it resets when the process restarts. Neon compute can sleep. Next.js 16.4.3 has a published security advisory. Production npm audit reports that one moderate finding. The first production build stops to show the upgrade notice and succeeds on the retry.
+
+## Launch Checklist
+
+Set DATABASE_URL to the pooled Neon host and DIRECT_URL to the direct host. Set AUTH_SECRET to at least 16 random characters. Deploy with the existing Vercel build command. Confirm GET /api/health returns ok true, create the admin at /setup, create an API key, and check a flag. Keep a database backup before rotating AUTH_SECRET, because rotation signs everyone out and invalidates API keys. Do not publish an sdk-v tag until the package version is the one you intend to release.
+
+## Decision
+
+NO-GO until Next.js is upgraded off 16.4.3. The product behavior tested here passed. The framework reports a known security vulnerability and production npm audit reports one moderate advisory in Next.js.
