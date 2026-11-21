@@ -21,7 +21,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | AUTH-03 | Sign out | P0 | PASSED | 0 | 0 | 0 | Logout returns 200 and the session no longer authenticates. |
 | AUTH-04 | Admin and member roles | P0 | PASSED | 0 | 0 | 0 | Members edit flags. Keys and team changes are 403 for a member. |
 | AUTH-05 | Login failure limit | P0 | PASSED | 0 | 0 | 0 | The ninth failure from the same address is 429. Another address is not locked. |
-| AUTH-06 | Login error does not reveal which part failed | P1 | NOT STARTED | | | | |
+| AUTH-06 | Login error does not reveal which part failed | P1 | PASSED | 0 | 0 | 0 | Unknown email and a wrong password return the same 401 body. |
 | APIKEY-01 | Create and list API keys | P0 | NOT STARTED | | | | |
 | APIKEY-02 | Revoke an API key | P0 | NOT STARTED | | | | |
 | FLAG-01 | Create, read, and delete a flag | P0 | NOT STARTED | | | | |
@@ -321,23 +321,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### AUTH-06 Login error does not reveal which part failed
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** src/app/api/auth/login/route.ts, src/lib/api.test.ts
 - **Expected behavior:** An unknown email and a wrong password return the same error. The response does not say which of the two was wrong.
 - **Acceptance:**
-- [ ] Both cases return the same status and the same message.
-- [ ] The body does not contain the stored password hash.
+- [x] Both cases return the same status and the same message.
+- [x] The body does not contain the stored password hash.
 - **Test cases:**
 - Compare the two responses.
 - The existing API test covers the timing and the message.
 - **Dependencies:** AUTH-02.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** An unknown email and a wrong password both returned 401 with {error: Invalid email or password}. Neither body named the account.
 
 ### APIKEY-01 Create and list API keys
 
