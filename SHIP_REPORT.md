@@ -40,7 +40,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-03 | New flag form | P0 | PASSED | 0 | 0 | 0 | The form creates a flag and opens it. Labels are present. |
 | UI-04 | Setup and login screens | P0 | PASSED | 0 | 0 | 0 | Setup, a wrong password, and the closed setup screen worked in Chrome. |
 | UI-05 | API keys and team settings | P0 | PASSED | 0 | 0 | 1 | The one-time secret disappears on refresh. Team fields now have visible labels. |
-| UI-06 | Audit page | P1 | NOT STARTED | | | | |
+| UI-06 | Audit page | P1 | PASSED | 0 | 0 | 1 | Sentences render, the empty filter is clear, and logged-out HTML has no rows. |
 | UI-07 | Public home page | P2 | NOT STARTED | | | | |
 | UI-08 | Signed-in shell | P1 | NOT STARTED | | | | |
 | UI-09 | Not found and error pages | P1 | NOT STARTED | | | | |
@@ -747,13 +747,13 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### UI-06 Audit page
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** src/app/(app)/audit/page.tsx
 - **Expected behavior:** The page lists the human-readable lines for flag changes. An empty log has an empty state. A logged-out user cannot see it.
 - **Acceptance:**
-- [ ] A flag edit appears as a sentence.
-- [ ] The page does not show a password or an API secret.
+- [x] A flag edit appears as a sentence.
+- [x] The page does not show a password or an API secret.
 - **Test cases:**
 - Change a flag, open /audit, and filter if a filter is on the page.
 - Open /audit signed out.
@@ -762,11 +762,11 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - Also check light paper theme, 360, 768, 1024, and 1440, focus, and the browser console.
 - **Dependencies:** AUDIT-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 1
+- **Files Changed:** included with UI-01
+- **Notes:** The audit page listed the human sentences for the flag edits and did not show a password or API secret. Filtering to a missing key showed No changes recorded. The filter has a Flag key label. A logged-out request no longer includes the rows.
 
 ### UI-07 Public home page
 
