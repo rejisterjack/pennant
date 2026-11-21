@@ -56,7 +56,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | DEVOPS-01 | GitHub Actions CI | P0 | PASSED | 0 | 0 | 0 | The CI steps passed locally. The workflow was not pushed. |
 | DEVOPS-02 | Vercel and Neon deploy shape | P0 | PASSED | 0 | 0 | 0 | The Vercel build command succeeded locally. No deploy was made. |
 | DEVOPS-03 | SDK publish workflow | P2 | PASSED | 0 | 0 | 0 | The publish workflow checks the tag against 0.1.1. No tag was pushed. |
-| TEST-01 | Node test suite | P0 | NOT STARTED | | | | |
+| TEST-01 | Node test suite | P0 | PASSED | 0 | 0 | 0 | The Node test suite passed, 39 tests. |
 | TEST-02 | Playwright operator journeys | P0 | NOT STARTED | | | | |
 | TEST-03 | Health-down script | P2 | NOT STARTED | | | | |
 
@@ -1090,23 +1090,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### TEST-01 Node test suite
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** package.json, src/lib/*.test.ts, packages/sdk/src/index.test.ts
 - **Expected behavior:** npm test runs the listed files with tsx, one at a time. The files cover evaluate, audit summaries, the login limit, validation, security headers, health when the database is down, the API, load, and the SDK. This is not a Vitest suite.
 - **Acceptance:**
-- [ ] npm test exits 0.
-- [ ] A missing database fails the tests that need it, rather than skipping them silently.
+- [x] npm test exits 0.
+- [x] A missing database fails the tests that need it, rather than skipping them silently.
 - **Test cases:**
 - Run npm test once the test database URL is set.
 - Do not delete a failing assertion.
 - **Dependencies:** DATA-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** npm test passed 39 tests: rollout, audit summaries, rate limit, validation, security, health-down, the HTTP API, the 200-check load, and the SDK.
 
 ### TEST-02 Playwright operator journeys
 
