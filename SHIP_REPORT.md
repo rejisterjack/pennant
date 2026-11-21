@@ -49,7 +49,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | SDK-01 | Server SDK package | P0 | NOT STARTED | | | | |
 | SDK-02 | isEnabled calls evaluate | P0 | NOT STARTED | | | | |
 | SDK-03 | Cache and default value | P1 | NOT STARTED | | | | |
-| SEC-01 | Security headers | P1 | NOT STARTED | | | | |
+| SEC-01 | Security headers | P1 | PASSED | 0 | 0 | 0 | The documented security headers are on the home response. |
 | SEC-02 | Health check | P0 | NOT STARTED | | | | |
 | SEC-03 | Concurrent evaluate load | P2 | NOT STARTED | | | | |
 | HTTP-01 | Session required on dashboard APIs | P0 | PASSED | 0 | 0 | 0 | Dashboard routes require a session. An API key is not a session. |
@@ -948,23 +948,23 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### SEC-01 Security headers
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P1
 - **Files:** next.config.ts, src/lib/security.test.ts
 - **Expected behavior:** Every path sends X-Content-Type-Options nosniff, X-Frame-Options DENY, Referrer-Policy strict-origin-when-cross-origin, a closed Permissions-Policy, and X-DNS-Prefetch-Control off.
 - **Acceptance:**
-- [ ] A document response and an API response carry those headers.
-- [ ] The API does not reflect a script from a flag name into HTML.
+- [x] A document response and an API response carry those headers.
+- [x] The API does not reflect a script from a flag name into HTML.
 - **Test cases:**
 - Read the headers on / and on /api/health.
 - Run the security unit test.
 - **Dependencies:** None.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** GET / on the dev server sent nosniff, X-Frame-Options DENY, strict-origin-when-cross-origin, Permissions-Policy camera microphone and geolocation empty, and X-DNS-Prefetch-Control off.
 
 ### SEC-02 Health check
 
