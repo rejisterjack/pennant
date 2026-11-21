@@ -29,7 +29,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | FLAG-03 | Per-user force on and force off | P0 | PASSED | 0 | 0 | 0 | Force on and force off replace one target. Surrounding spaces are trimmed. |
 | FLAG-04 | Preview a user against a flag | P1 | PASSED | 0 | 0 | 0 | Preview returns the decision reason. A missing flag is 404. |
 | FLAG-05 | Flag key shape | P1 | PASSED | 0 | 0 | 0 | Uppercase, a leading digit, and a 65-character key are rejected. |
-| AUDIT-01 | Audit row on a flag change | P0 | NOT STARTED | | | | |
+| AUDIT-01 | Audit row on a flag change | P0 | PASSED | 0 | 0 | 0 | Create, update, and target changes each write an audit row. |
 | AUDIT-02 | List and filter the audit log | P1 | NOT STARTED | | | | |
 | AUDIT-03 | Readable audit summaries | P2 | NOT STARTED | | | | |
 | TEAM-01 | Admin adds a teammate | P0 | NOT STARTED | | | | |
@@ -495,24 +495,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### AUDIT-01 Audit row on a flag change
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/lib/audit.ts, src/prisma/contract.prisma
 - **Expected behavior:** Creating, updating, deleting a flag, and changing a target write an audit event with the actor email, action, flag key, and before and after JSON. The event does not store an API key secret or a password hash.
 - **Acceptance:**
-- [ ] A flag update appears in the audit list.
-- [ ] The actor email matches the signed-in user.
-- [ ] The stored JSON has no secret.
+- [x] A flag update appears in the audit list.
+- [x] The actor email matches the signed-in user.
+- [x] The stored JSON has no secret.
 - **Test cases:**
 - Change a flag and read the newest audit row.
 - Delete a target and confirm that change is recorded too.
 - **Dependencies:** FLAG-01, FLAG-03.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** The flag's audit list included created, updated, and targeting_changed, with the admin email on the rows.
 
 ### AUDIT-02 List and filter the audit log
 
