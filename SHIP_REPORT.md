@@ -25,7 +25,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | APIKEY-01 | Create and list API keys | P0 | PASSED | 0 | 0 | 0 | The secret is returned once and is absent from the list. |
 | APIKEY-02 | Revoke an API key | P0 | PASSED | 0 | 0 | 0 | Revoke returns 200 and the secret stops working. |
 | FLAG-01 | Create, read, and delete a flag | P0 | PASSED | 0 | 0 | 0 | Create, read, and duplicate key return 201, 200, and 409. |
-| FLAG-02 | Toggle and rollout percent | P0 | NOT STARTED | | | | |
+| FLAG-02 | Toggle and rollout percent | P0 | PASSED | 0 | 0 | 0 | Toggle and percent 40 persist. Out-of-range percents are 400. |
 | FLAG-03 | Per-user force on and force off | P0 | NOT STARTED | | | | |
 | FLAG-04 | Preview a user against a flag | P1 | NOT STARTED | | | | |
 | FLAG-05 | Flag key shape | P1 | NOT STARTED | | | | |
@@ -408,25 +408,25 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### FLAG-02 Toggle and rollout percent
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/flags/[key]/route.ts, src/components/flag-editor.tsx, src/lib/validate.ts
 - **Expected behavior:** PATCH sets enabled to a boolean and rolloutPercent to an integer from 0 through 100. Other types are rejected. The dashboard editor writes those fields.
 - **Acceptance:**
-- [ ] 0, 100, and a middle percent are stored.
-- [ ] 101, -1, 1.5, and a string percent are rejected.
-- [ ] enabled must be a boolean.
+- [x] 0, 100, and a middle percent are stored.
+- [x] 101, -1, 1.5, and a string percent are rejected.
+- [x] enabled must be a boolean.
 - **Test cases:**
 - Patch a flag through the API and through the editor.
 - Submit the form twice.
 - Patch a flag that does not exist.
 - **Dependencies:** FLAG-01, EVAL-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Turning a flag on returned enabled true. Percent 40 was stored. 101, 1.5, and the string 40 were 400. A live evaluate followed the toggle and then percent 0.
 
 ### FLAG-03 Per-user force on and force off
 
