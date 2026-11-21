@@ -11,7 +11,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | ID | Feature | Priority | Status | Bugs Found | Bugs Fixed | UI Issues Fixed | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | DATA-01 | Postgres schema and migration | P0 | PASSED | 0 | 0 | 0 | Fresh Postgres 16 on 127.0.0.1:54331. Six tables. Rollout 101 rejected by flag_rollout_range. Second migrate left the existing flag. |
-| DATA-02 | Pooled runtime URL and direct migration URL | P0 | NOT STARTED | | | | |
+| DATA-02 | Pooled runtime URL and direct migration URL | P0 | PASSED | 0 | 0 | 0 | Runtime uses DATABASE_URL. Migrations use DIRECT_URL, then DATABASE_URL. vercel.json migrates before the build. A missing or 5-character AUTH_SECRET throws. |
 | EVAL-01 | Rollout decision | P0 | NOT STARTED | | | | |
 | EVAL-02 | GET /api/v1/evaluate | P0 | NOT STARTED | | | | |
 | EVAL-03 | GET /api/v1/flags | P1 | NOT STARTED | | | | |
@@ -102,24 +102,24 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### DATA-02 Pooled runtime URL and direct migration URL
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** README.md, .env.example, vercel.json, prisma.config.ts
 - **Expected behavior:** Runtime queries use DATABASE_URL. Migrations use DIRECT_URL. On Neon those are the pooled host and the direct host. A local database may use the same value for both. The Vercel build command is prisma db migrate && next build.
 - **Acceptance:**
-- [ ] The example env documents both variables and which host is pooled.
-- [ ] vercel.json build command migrates before the Next build.
-- [ ] A missing AUTH_SECRET of at least 16 characters fails closed in authSecret().
+- [x] The example env documents both variables and which host is pooled.
+- [x] vercel.json build command migrates before the Next build.
+- [x] A missing AUTH_SECRET of at least 16 characters fails closed in authSecret().
 - **Test cases:**
 - Read prisma.config.ts and confirm the two URLs are wired to the documented roles.
 - Start is not required. Do not connect to a production database.
 - **Dependencies:** DATA-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** prisma.config.ts connects migrations with DIRECT_URL ?? DATABASE_URL. src/prisma/db.ts uses DATABASE_URL. .env.example says the pooled host contains -pooler and the direct host does not. vercel.json buildCommand is `prisma db migrate && next build`. authSecret() threw for an unset secret and for `short`, and returned a 16-character secret.
 
 ### EVAL-01 Rollout decision
 
