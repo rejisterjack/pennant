@@ -47,7 +47,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | UI-10 | Crawl policy | P2 | PASSED | 0 | 0 | 0 | robots.txt disallows /. The home page is noindex, nofollow. |
 | SEO-01 | Document title, description, and icon | P1 | PASSED | 0 | 0 | 0 | Titles use the Pennant template. /favicon.svg returns 200. |
 | SDK-01 | Server SDK package | P0 | PASSED | 0 | 0 | 0 | The SDK package builds and publishes only dist. |
-| SDK-02 | isEnabled calls evaluate | P0 | NOT STARTED | | | | |
+| SDK-02 | isEnabled calls evaluate | P0 | PASSED | 0 | 0 | 0 | The SDK test calls evaluate with the bearer token. |
 | SDK-03 | Cache and default value | P1 | NOT STARTED | | | | |
 | SEC-01 | Security headers | P1 | PASSED | 0 | 0 | 0 | The documented security headers are on the home response. |
 | SEC-02 | Health check | P0 | PASSED | 0 | 0 | 0 | Health is 200 {ok:true} with a private no-store cache header. |
@@ -905,25 +905,25 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### SDK-02 isEnabled calls evaluate
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** packages/sdk/src/index.ts, packages/sdk/src/index.test.ts
 - **Expected behavior:** isEnabled sends GET /api/v1/evaluate with the bearer key and the flag query. A user id is added when present. An empty flag key throws. A missing flag from the API returns false. A non-OK response throws unless defaultValue is set.
 - **Acceptance:**
-- [ ] A true response returns true.
-- [ ] A missing flag response of enabled false returns false.
-- [ ] A 401 throws.
-- [ ] The Authorization header is Bearer plus the key.
+- [x] A true response returns true.
+- [x] A missing flag response of enabled false returns false.
+- [x] A 401 throws.
+- [x] The Authorization header is Bearer plus the key.
 - **Test cases:**
 - Run the SDK unit tests.
 - Point a client at the local app during step 2 and check one flag.
 - **Dependencies:** EVAL-02, SDK-01.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** packages/sdk/src/index.test.ts passed. isEnabled calls evaluate with the bearer token and parses enabled. An empty flag is rejected before the network. The user id is trimmed.
 
 ### SDK-03 Cache and default value
 
