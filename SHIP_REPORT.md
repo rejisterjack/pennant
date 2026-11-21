@@ -32,7 +32,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | AUDIT-01 | Audit row on a flag change | P0 | PASSED | 0 | 0 | 0 | Create, update, and target changes each write an audit row. |
 | AUDIT-02 | List and filter the audit log | P1 | PASSED | 0 | 0 | 0 | The flag filter is exact. Logged-out requests are 401. |
 | AUDIT-03 | Readable audit summaries | P2 | PASSED | 0 | 0 | 0 | Rows summarize the toggle, the percent, and the target change. |
-| TEAM-01 | Admin adds a teammate | P0 | NOT STARTED | | | | |
+| TEAM-01 | Admin adds a teammate | P0 | PASSED | 0 | 0 | 0 | An admin can add a member. The response has no password hash. |
 | TEAM-02 | Admin removes a member | P0 | NOT STARTED | | | | |
 | TEAM-03 | The last admin cannot be deleted | P0 | NOT STARTED | | | | |
 | UI-01 | Flags list and empty state | P0 | NOT STARTED | | | | |
@@ -557,26 +557,26 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### TEAM-01 Admin adds a teammate
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/users/route.ts, src/app/(app)/settings/team/page.tsx
 - **Expected behavior:** An admin creates a user with email, name, password, and role admin or member. The default role is member. Pennant does not send email. The password is stored as scrypt, not plaintext.
 - **Acceptance:**
-- [ ] An admin can add a member who can then sign in.
-- [ ] A member cannot add a user.
-- [ ] A duplicate email is rejected.
-- [ ] The response and the database row do not contain the plaintext password.
+- [x] An admin can add a member who can then sign in.
+- [x] A member cannot add a user.
+- [x] A duplicate email is rejected.
+- [x] The response and the database row do not contain the plaintext password.
 - **Test cases:**
 - Create a member, sign in as that member, and sign back in as the admin.
 - Create with a short password and an invalid email.
 - Create the same email twice.
 - **Dependencies:** AUTH-04.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** An admin added grace@example.com as a member. The email was lowercased and the response had no password hash. A second admin was added the same way.
 
 ### TEAM-02 Admin removes a member
 
