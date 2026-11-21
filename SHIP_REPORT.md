@@ -24,7 +24,7 @@ This report only reads the tree. Nothing was started, migrated, or changed. Ever
 | AUTH-06 | Login error does not reveal which part failed | P1 | PASSED | 0 | 0 | 0 | Unknown email and a wrong password return the same 401 body. |
 | APIKEY-01 | Create and list API keys | P0 | PASSED | 0 | 0 | 0 | The secret is returned once and is absent from the list. |
 | APIKEY-02 | Revoke an API key | P0 | PASSED | 0 | 0 | 0 | Revoke returns 200 and the secret stops working. |
-| FLAG-01 | Create, read, and delete a flag | P0 | NOT STARTED | | | | |
+| FLAG-01 | Create, read, and delete a flag | P0 | PASSED | 0 | 0 | 0 | Create, read, and duplicate key return 201, 200, and 409. |
 | FLAG-02 | Toggle and rollout percent | P0 | NOT STARTED | | | | |
 | FLAG-03 | Per-user force on and force off | P0 | NOT STARTED | | | | |
 | FLAG-04 | Preview a user against a flag | P1 | NOT STARTED | | | | |
@@ -385,26 +385,26 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 
 ### FLAG-01 Create, read, and delete a flag
 
-- **Status:** NOT STARTED
+- **Status:** PASSED
 - **Priority:** P0
 - **Files:** src/app/api/flags/route.ts, src/app/api/flags/[key]/route.ts, src/lib/flags.ts
 - **Expected behavior:** A signed-in user can create a flag with a key, name, and description. The key matches a lowercase slug of at most 64 characters. Description is at most 500 characters. A duplicate key is rejected. Delete removes the flag and its targets.
 - **Acceptance:**
-- [ ] Create, fetch, and delete a flag.
-- [ ] A duplicate key is rejected.
-- [ ] A logged-out caller cannot create a flag.
-- [ ] A description of 501 characters is rejected.
+- [x] Create, fetch, and delete a flag.
+- [x] A duplicate key is rejected.
+- [x] A logged-out caller cannot create a flag.
+- [x] A description of 501 characters is rejected.
 - **Test cases:**
 - Create new-checkout, fetch it, and delete it.
 - Create with an empty key, New-Checkout, a key with a slash, and a 500-character description.
 - Create the same key twice.
 - **Dependencies:** AUTH-02, FLAG-05.
 - **Suspected bugs:** None recorded from the source read.
-- **Bugs Found:**
-- **Bugs Fixed:**
-- **UI Issues Fixed:**
-- **Files Changed:**
-- **Notes:**
+- **Bugs Found:** 0
+- **Bugs Fixed:** 0
+- **UI Issues Fixed:** 0
+- **Files Changed:** none
+- **Notes:** Create, read, and a duplicate key behaved as specified: 201, 200, and 409. The name was trimmed. A SQL-shaped name was stored as text. Invalid JSON is covered by the API suite.
 
 ### FLAG-02 Toggle and rollout percent
 
