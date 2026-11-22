@@ -17,7 +17,7 @@ await pennant.isEnabled("new-checkout", userId);
 
 ## Deploy
 
-You need a [Vercel](https://vercel.com) project and a [Neon](https://neon.tech) Postgres database. One Pennant deployment is one environment: run a second deploy for staging.
+You need a [Vercel](https://vercel.com) project and a [Neon](https://neon.tech) Postgres database. The only deployment is production, on `main`.
 
 1. Create a Neon project and copy both connection strings.
 2. Set `DATABASE_URL` to the **pooled** string (the host contains `-pooler`). The app uses this at runtime.
@@ -75,6 +75,12 @@ Checks are uncached at the CDN (`Cache-Control: private, no-store`).
 5. Below 100%, Pennant hashes `flagKey:userId` with SHA-256 and takes a bucket from 0 to 99. The user is on when `bucket < rolloutPercent`. The same user stays in the same bucket. A check with no user id is off.
 
 Percentage rollout needs a stable user id. `0` means only forced-on users. `100` means everyone who is not forced off.
+
+## CI/CD
+
+Workflows run only on a push to `main`. A pull request, any other branch, a tag push, a schedule, and a manual run do not start CI or CD. The only deploy target is production. Vercel builds only when the git ref is `main`.
+
+A production SDK publish runs on that same push when the commit subject is `release: sdk-v` plus the version in `packages/sdk/package.json` (`release: sdk-v1.2.3`). Any other push to `main` runs checks only. Pushing a tag does not start a workflow.
 
 ## What this is not
 

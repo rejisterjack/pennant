@@ -67,7 +67,7 @@ Testing finished on 21 Nov 2026 against a local Postgres 16. 49 features passed.
 | GAP-01 | Audience segments | DEFER | The README lists segments as won't-build. Per-user force on and off is the targeting that exists. |
 | GAP-02 | Flag-change webhooks | DEFER | The README says the audit log is the change record. |
 | GAP-03 | A/B experiments and analytics | DEFER | VISION.md limits the product to flags and rollout. |
-| GAP-04 | Several environments in one deployment | DEFER | The README says a second deploy is the staging environment. |
+| GAP-04 | Several environments in one deployment | DEFER | The README says the only deployment is production. |
 | GAP-05 | OAuth or SSO | DEFER | Sign-in is email and password only. |
 | GAP-06 | Email invites and password reset | DEFER | The README says Pennant does not send email. An admin sets the teammate password. |
 | GAP-07 | Browser SDK | DEFER | The SDK README says the API key must not be put in browser code. |
@@ -1033,7 +1033,7 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - **Status:** PASSED
 - **Priority:** P0
 - **Files:** .github/workflows/ci.yml
-- **Expected behavior:** On a pull request and on a push to main, CI uses Postgres 16, runs prisma db migrate, typecheck, lint, npm test, the SDK build, the Next build, and Playwright. The CI auth secret is a fixture, not a production secret.
+- **Expected behavior:** On a push to main, CI uses Postgres 16, runs prisma db migrate, typecheck, lint, npm test, the SDK build, the Next build, and Playwright. The CI auth secret is a fixture, not a production secret.
 - **Acceptance:**
 - [x] The workflow file contains those steps in that order.
 - [x] Step 2 runs the same commands locally where they do not need a browser vendor install beyond what the repo already uses.
@@ -1046,7 +1046,7 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - **Bugs Fixed:** 0
 - **UI Issues Fixed:** 0
 - **Files Changed:** none
-- **Notes:** The CI workflow runs on pull requests and pushes to main with Postgres 16, then npm ci, prisma db migrate, typecheck, lint, npm test, the SDK build, next build, and Playwright. Those commands passed locally. This pass did not push, so GitHub Actions was not triggered.
+- **Notes:** The CI workflow runs only on a push to main with Postgres 16, then npm ci, prisma db migrate, typecheck, lint, npm test, the SDK build, next build, and Playwright. Those commands passed locally. This pass did not push, so GitHub Actions was not triggered.
 
 ### DEVOPS-02 Vercel and Neon deploy shape
 
@@ -1074,7 +1074,7 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - **Status:** PASSED
 - **Priority:** P2
 - **Files:** .github/workflows/publish-sdk.yml, packages/sdk/package.json
-- **Expected behavior:** A tag sdk-v* publishes the package only when the tag matches packages/sdk/package.json version, currently 0.1.1. The workflow uses NPM_TOKEN and does not run on this report.
+- **Expected behavior:** A push to main whose subject is `release: sdk-v` plus the packages/sdk/package.json version publishes the package, currently 0.1.1. The workflow uses NPM_TOKEN and does not run on this report.
 - **Acceptance:**
 - [x] The tag check is in the workflow.
 - [x] Step 1 and step 2 do not push an sdk-v tag.
@@ -1086,7 +1086,7 @@ Deferred gaps are not feature rows. There is no BUILD gap. The not-found page an
 - **Bugs Fixed:** 0
 - **UI Issues Fixed:** 0
 - **Files Changed:** none
-- **Notes:** publish-sdk.yml runs on sdk-v* tags, fails when the tag does not match packages/sdk/package.json, and publishes with NPM_TOKEN. The package version is 0.1.1. No tag was pushed.
+- **Notes:** publish-sdk.yml runs on a push to main when the subject is `release: sdk-v` plus the packages/sdk/package.json version, and publishes with NPM_TOKEN. The package version is 0.1.1. No release commit was pushed.
 
 ### TEST-01 Node test suite
 
@@ -1211,7 +1211,7 @@ None.
 - Deploy with the existing Vercel command, `prisma db migrate && next build`.
 - After deploy, confirm `GET /api/health` returns `{ "ok": true }`, create the admin at `/setup`, create an API key, and check a flag.
 - Next.js is already pinned at 16.4.6. Do not deploy a lockfile that resolves back to 16.4.3.
-- Do not push an `sdk-v*` tag unless `packages/sdk/package.json` is the version to publish. That version is 0.1.1.
+- Do not push a `main` commit whose subject is `release: sdk-v*` unless `packages/sdk/package.json` is the version to publish. That version is 0.1.1.
 
 ## Decision
 
